@@ -1,0 +1,38 @@
+<div class="row">
+  <div class="span 12 hero-unit">
+    <h1>Tweetifies</h1>
+    <div id="alerts">
+
+    </div>
+
+    <% if (show_login) { %>
+      <a href="/login/twitter">Login Now</a>
+    <% } else { %>
+
+      <div class="span11 row">
+        <form id="twitter-input">
+          <fieldset>
+            <div class="control-group">
+              <div class="controls">
+                <textarea class="input-xlarge" id="tweet-text" rows="3" style="width: 100%;" placeholder="What do you want to say?"></textarea>
+              </div>
+              <div class="controls">
+                <label class="checkbox">
+                  <input type="checkbox" id="geolocate" value="geolocate">
+                  Geolocate?
+                </label>
+              </div>
+            </div>
+          </fieldset>
+          <div class="form-actions">
+            <button class="btn">Tweet</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="twitter-output" class="span11 row">
+
+      </div>
+    <% } %>
+  </div>
+</div>

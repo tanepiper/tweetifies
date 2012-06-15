@@ -1,0 +1,78 @@
+<div class="row">
+  <div class="span6 well">
+    <h1>Twitter Example</h1>
+    <p>
+      This twitter example is a simple search example - it uses public search APIs via request.
+    </p>
+    <div id="alerts">
+
+    </div>
+    <form id="twitter-search" class="well form-search">
+      <legend>Enter Search Term</legend>
+      <input type="text" id="twitter-search-term" class="input-medium search-query">
+      <button type="submit" class="btn">Search</button>
+    </form>
+
+    <div id="twitter-output" class="span5">
+
+    </div>
+  </div>
+  <div class="span5">
+
+  </div>
+</div>
+
+<script type="text/javascript">
+  DNode({
+    twitterResult: function(err, res, body) {
+      if (err || res.statusCode >= 300) {
+        return $('#alerts').removeClass('alert-info').addClass('alert-error').text((err) ? err.toString() : 'Error status code ' + res.statusCode);
+      }
+
+      var result_string = 'Twitter returned ' + body.results_per_page + ' returns in ' + body.completed_in + 's'
+
+      console.log(body);
+      $('#alerts').removeClass('alert-info').addClass('alert-success').text(result_string);
+
+      var list = $('#twitter-output');
+      body.results.forEach(function(tweet) {
+
+        var result_body = [
+          '<div class="tweet well row span4">',
+            '<div class="span1">',
+              '<a href="http://twitter.com/' + tweet.from_user + '/' + tweet.id + '">',
+                '<h6>From @' + tweet.from_user + '</h6>',
+                '<img src="' + tweet.profile_image_url + '" />',
+              '</a>',
+            '</div>',
+            '<div class="span2">' + tweet.text + '</div>',
+            '<div class="span3">',
+              '<p>Sent on ',
+                tweet.created_at,
+                (tweet.to_user !== null) ? ' in reply to @' + tweet.to_user : '',
+              '</p>',
+          '</div>',
+        ].join('');
+
+        list.append(result_body);
+      });
+    },
+    googleResult: function(err, res, body) {
+      console.log(arguments);
+    }
+  }).connect(function(remote, connection) {
+    window.remote = remote;
+    window.connection = connection;
+  });
+
+  $(function() {
+    $('#twitter-search').submit(function(e) {
+      e.preventDefault();
+      var search_term = $('#twitter-search-term').val();
+
+      $('#alerts').addClass('alert-info').text('Searching for twitter term ' + search_term).fadeIn();
+
+      remote.example2.twitterSearch(search_term);
+    });
+  });
+</script>
