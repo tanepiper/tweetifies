@@ -42,7 +42,7 @@ module.exports = function(instance) {
     } else {
       // We assume here we need to create a new session oauth
       req.session.oauth = {
-        callback: 'http://' + instance.options.oauth.baseurl + '/login/twitter',
+        callback: 'http://' + instance.options.oauth.base_url + ( (instance.options.dev) ?  ':' + instance.options.express.port :  '' ) + '/login/twitter',
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret
       };
@@ -96,7 +96,8 @@ module.exports = function(instance) {
       }
 
       res.render('app.html', {
-        show_login: show_login
+        show_login: show_login,
+        session: req.session
       });
   });
 

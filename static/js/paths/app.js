@@ -30,7 +30,7 @@ $(function() {
 
   var fadeout_time = 30000;
 
-  var render_tweet = function(message) {
+  var render_tweet = function(output, message) {
     if (message.friends) {
       user.friends = message.friends;
     } else {
@@ -75,20 +75,20 @@ $(function() {
 
 
       var result_body = $([
-        '<div id="' + message.id + '" class="tweet well row span10">',
-          '<div class="span2">',
-            '<a target="_new" href="http://twitter.com/' + message.user.screen_name + '">',
-              '<h6 class="from">Tweeted By<br />' + '@' + message.user.screen_name + '</h6>',
-              '<img src="' + message.user.profile_image_url + '" />',
+        '<div id="' + message.id + '" class="tweet well row span4">',
+          '<div class="span1">',
+            '<a target="_new" href="http://twitter.com/' + ((message.user) ? message.user.screen_name : message.from_user) + '">',
+              '<h6 class="from">Tweeted By<br />' + '@' + ((message.user) ? message.user.screen_name : message.from_user) + '</h6>',
+              '<img src="' + ((message.user) ? message.user.profile_image_url : message.profile_image_url)+ '" />',
             '</a>',
           '</div>',
-          '<div class="span4">',
-            '<div class="row span7">',
+          '<div class="span2">',
+            '<div class="row span1">',
               '<p>' + body + '</p>',
             '</div>',
-            '<div class="row span7">',
+            '<div class="row span1">',
               '<p>Sent on ',
-                '<a target="_new" href="http://twitter.com/' + message.user.screen_name + '/status/' + message.id_str + '">',
+                '<a target="_new" href="http://twitter.com/' +((message.user) ? message.user.screen_name : message.from_user) + '/status/' + message.id_str + '">',
                   moment(message.created_at).format('Do MMMM YYYY h:mm:ss'),
                 '</a>',
                 in_reply_to,
@@ -114,7 +114,7 @@ $(function() {
         '</div>'
       ].join(''));
 
-      list.prepend(result_body);
+      output.prepend(result_body);
 
       $('a.geotrigger', '#' + message.id).on('click', function() {
         remote.app.getTweetLocation(message.geo.coordinates, function(err, res, body) {
@@ -152,7 +152,7 @@ $(function() {
           setTimeout(function() {
             google.maps.event.trigger(map, 'resize');
             map.panTo(marker.getPosition());
-          }, 1000);
+          }, 500);
         });
       });
 
@@ -162,14 +162,23 @@ $(function() {
     }
   };
 
+  var processSearch = function(err, interval, data) {
+    console.log(arguments);
+    data.results.forEach(function(tweet) {
+      render_tweet($('#twitter-search-output'), tweet);
+    });
+  };
+
   DNode({
-    incomingTweets: function(message) {
-      message.reverse().forEach(function(tweet) {
-        render_tweet(tweet);
+    incomingTweets: function(tweets) {
+      tweets.reverse().forEach(function(tweet) {
+        render_tweet($('#twitter-output'), tweet);
       });
     },
 
-    incomingTweet: render_tweet,
+    incomingTweet: function(tweet) {
+      render_tweet($('#twitter-output'), tweet);
+    },
 
     incomingError: function(error) {
       console.error(error);
@@ -182,6 +191,12 @@ $(function() {
   }).connect(function(remote, connection) {
     window.remote = remote;
     window.connection = connection;
+
+    $('#twitter-search').on('submit', function(e) {
+      e.preventDefault();
+      var val = $('.search-query', this).val();
+      remote.app.search(val, {include_entities: true}, processSearch);
+    });
 
     $('#twitter-input').submit(function(e) {
       e.preventDefault();

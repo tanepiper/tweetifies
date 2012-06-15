@@ -5,6 +5,39 @@ module.exports = function(namespace, dnode, instance, client, connection) {
 
   dnode[namespace] = {};
 
+  dnode[namespace].search = function(term, params, cb) {
+    if (typeof params === 'function') {
+      cb = params;
+      options = {};
+    } else {
+      options = params;
+    }
+
+    dnode.session(function(err, session) {
+      if (err) {
+        return cb(err);
+      }
+
+      var twit = new twitter({
+        consumer_key: instance.options.oauth.consumer_key,
+        consumer_secret: instance.options.oauth.consumer_secret,
+        access_token_key: session.oauth.access_token,
+        access_token_secret: session.oauth.access_token_secret
+      });
+
+      var interval = setInterval(function() {
+        twit.search(term, options, function(err, data) {
+          options.since_id = data.max_id_str;
+          if (err) {
+            clearInterval(interval);
+            return cb(err);
+          }
+          cb(null, interval, data);
+        });
+      }, 5000);
+    });
+  };
+
   dnode[namespace].userTimeline = function(cb) {
 
     dnode.session(function(err, session) {
