@@ -27,7 +27,7 @@ module.exports = function(instance) {
    server.get('/login/twitter', function(req, res, next) {
 
     req.session.oauth = {
-      callback: 'http://scotlandjs.tanepiper.com/login/twitter',
+      callback: 'http://' + instance.options.oauth.baseurl + '/login/twitter',
       consumer_key: instance.options.oauth.consumer_key,
       consumer_secret: instance.options.oauth.consumer_secret
     };
