@@ -1,13 +1,24 @@
+/**
+ * External requires
+ */
+var _ = require('underscore');
+
+/**
+ * This module in our instance starting module, it allows us to return an instance
+ * that has an express and DNode server connected to it
+ */
 module.exports = (function() {
 
-  var _ = require('underscore');
-
   return {
+    /**
+     * This function can be called to create the instance
+     */
     createInstance: function(options) {
       options = options || {};
 
       var instance = {};
 
+      // Set some default options
       instance.options = _.defaults(options, {
         base: __dirname,
         express: {
@@ -18,11 +29,14 @@ module.exports = (function() {
         }
       });
 
+      // Attach the express server for HTTP
       require('./express')(instance);
+
+      // Attach the DNode server for our functionality
       require('./dnode_server')(instance);
 
       return instance;
     }
-  }
+  };
 
 }());

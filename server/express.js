@@ -1,14 +1,20 @@
+/**
+ * External Dependencies
+ */
+var express = require('express');
+var request = require('request');
+var fs = require('fs');
+var qs = require('qs');
+
+/**
+ * This function creates an attaches our express and session store instances
+ */
 module.exports = function(instance) {
-
-  var express = require('express');
-  var fs = require('fs');
-  var request = require('request');
-  var qs = require('qs');
-
 
   var server = express.createServer();
   var RedisStore = require('connect-redis')(express);
   var store = new RedisStore();
+
 
   server.configure(function() {
     server.set('view engine', 'html');
@@ -24,18 +30,31 @@ module.exports = function(instance) {
     server.use(express.static(instance.options.express.static_dir));
   });
 
-   server.get('/login/twitter', function(req, res, next) {
 
-    req.session.oauth = {
-      callback: 'http://' + instance.options.oauth.baseurl + '/login/twitter',
-      consumer_key: instance.options.oauth.consumer_key,
-      consumer_secret: instance.options.oauth.consumer_secret
-    };
+  /**
+   * Our route to handle twitter login and auth
+   */
+  server.get('/login/twitter', function(req, res, next) {
 
+    // The user already has a session so we don't need to re-authorise
+    if (req.session.oauth && !req.param('oauth_token') && !req.param('oauth_verifier')) {
+      return res.redirect('/');
+    } else {
+      // We assume here we need to create a new session oauth
+      req.session.oauth = {
+        callback: 'http://' + instance.options.oauth.baseurl + '/login/twitter',
+        consumer_key: instance.options.oauth.consumer_key,
+        consumer_secret: instance.options.oauth.consumer_secret
+      };
+    }
+
+    // Based on the incoming request we have requested our token and the user
+    // has authorised the app
     if (req.param('oauth_token') && req.param('oauth_verifier')) {
       req.session.oauth.token = req.query.oauth_token;
       req.session.oauth.verifier = req.query.oauth_verifier;
 
+      // Now we need to get our access token for reading/posting data
       request.post({
         uri: 'https://api.twitter.com/oauth/access_token',
         oauth: req.session.oauth
