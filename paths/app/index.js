@@ -62,6 +62,29 @@ module.exports = function(namespace, dnode, instance, client, connection) {
     });
   };
 
+  dnode[namespace].getDirectMessages = function(params, cb) {
+    if (typeof params === 'function') {
+      cb = params;
+      options = {};
+    } else {
+      options = params;
+    }
+
+    dnode.session(function(err, session) {
+      if (err) {
+        return cb(err);
+      }
+
+      var twit = new twitter({
+        consumer_key: instance.options.oauth.consumer_key,
+        consumer_secret: instance.options.oauth.consumer_secret,
+        access_token_key: session.oauth.access_token,
+        access_token_secret: session.oauth.access_token_secret
+      });
+      twit.verifyCredentials(function (err, data) {}).getDirectMessages(cb);
+    });
+  }
+
   dnode[namespace].getTweetLocation = function(coordinates, cb) {
     request({
       uri: 'https://maps.googleapis.com/maps/api/geocode/json',
@@ -87,27 +110,32 @@ module.exports = function(namespace, dnode, instance, client, connection) {
           access_token_secret: session.oauth.access_token_secret
         });
 
+        /*
         twit
-          .verifyCredentials(function (err, data) {
-            console.log(data);
-          })
-          .getHomeTimeline({count: 20, include_entities: true}, function(err, data) {
-            client.incomingTweets(data);
+        .verifyCredentials(function (err, data) {
+          console.log(data);
+        })
+        .getHomeTimeline({count: 20, include_entities: true}, function(err, data) {
+          client.incomingTweets(data);
+        });
+        */
+
+        twit.stream('user', function(stream) {
+          stream.on('data', function(tweet) {
+            console.log('tweet', tweet);
+            client.incomingTweet(tweet);
           });
 
-          twit.stream('user', function(stream) {
-            stream.on('data', function(tweet) {
-              client.incomingTweet(tweet);
-            });
-
-            stream.on('error', function(error) {
-              client.incomingError(error);
-            });
-
-            stream.on('destroy', function(destory) {
-              client.incomingDestroy(destory);
-            });
+          stream.on('error', function(error) {
+            console.log('error', error);
+            client.incomingError(error);
           });
+
+          stream.on('destroy', function(destory) {
+            console.log('destory', destory);
+            client.incomingDestroy(destory);
+          });
+        });
       }
     });
   });
