@@ -18,3 +18,7 @@ body {
 .tweet {
   clear: both;
 }
+
+.dropdown-menu a.active {
+  background-color: #CEDBEB;
+}

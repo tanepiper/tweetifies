@@ -1,23 +1,33 @@
 <script type="text/template" id="tweet-template">
-  <div class="tweet well" id="<%= tweet.id_str %>" style="display:none; position:relative; style: padding: 10px;">
-    <header>
-      <h5 style="padding-left: 5px; border-bottom: 2px solid  black; margin-bottom: 5px;">
-        <a href="http://twitter.com/<% tweet.user.screen_name %>">@<%= tweet.user.screen_name %></a>
-      </h5>
-    </header>
-    <section class="main" style="position:relative;">
-      <div style="float:left; position:absolute; top: 0; left: 0; width:50px; height: 80px">
-        <img src="<%= tweet.user.user_image %>" />
+  <div class="tweet well span5" id="tweet-<%= id %>" style="position:relative;" data-tweet="<%= id %>">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand pull-left" href="#">@<%= user.screen_name %></a>
+          <ul class="nav pull-left">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Actions <b class="caret"></b></a>
+              <ul class="dropdown-menu tweet-commands">
+                <li class="nav-header">Tweet</li>
+                <li><a class="reply" href="#"><i class="icon-hand-left"></i> Reply</a></li>
+                <li><a class="retweet" href="#"><i class="icon-refresh"></i> Retweet</a></li>
+                <li><a class="favourite" href="#"><i class="icon-heart"></i> Favourite</a></li>
+                <li><a class="delete disabled" disabled="disabled" href="#"><i class="icon-trash"></i> Delete</a></li>
+                <li class="divider"></li>
+                <li class="nav-header">User</li>
+                <li><a class="user-profile" href="#"><i class="icon-user"></i> View Profile</a></li>
+                <li><a class="direct-message" href="#"><i class="icon-envelope"></i> Direct Message</a></li>
+                <li><a class="block" href="#"><i class="icon-lock"></i> Block</a></li>
+                <li><a class="spam" href="#"><i class="icon-signal"></i> Report as Spam</a></li>
+              </ul>
+            </li>
+          </ul>
+          <img class="pull-right" style="width: 40px; height: 40px;" src="<%= user.profile_image_url %>" />
+        </div>
       </div>
-      <div style="float:left; position:absolute; top: 0; left: 50px; width: 150px; height: 80px;">
-        <p>By: </p>
-      </div>
-      <div style="float:left; position:absolute; top: 0; left: 200px; width: 250px; height: 80px;">
-        <p><%= tweet.text %></p>
-      </div>
-    </section>
-    <footer style="clear:both;">
-
-    </footer>
+    </div>
+    <div class="span4">
+      <p><%= text %></p>
+    </div>
   </div>
 </script>
