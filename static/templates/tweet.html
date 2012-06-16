@@ -1,0 +1,23 @@
+<script type="text/template" id="tweet-template">
+  <div class="tweet well" id="<%= tweet.id_str %>" style="display:none; position:relative; style: padding: 10px;">
+    <header>
+      <h5 style="padding-left: 5px; border-bottom: 2px solid  black; margin-bottom: 5px;">
+        <a href="http://twitter.com/<% tweet.user.screen_name %>">@<%= tweet.user.screen_name %></a>
+      </h5>
+    </header>
+    <section class="main" style="position:relative;">
+      <div style="float:left; position:absolute; top: 0; left: 0; width:50px; height: 80px">
+        <img src="<%= tweet.user.user_image %>" />
+      </div>
+      <div style="float:left; position:absolute; top: 0; left: 50px; width: 150px; height: 80px;">
+        <p>By: </p>
+      </div>
+      <div style="float:left; position:absolute; top: 0; left: 200px; width: 250px; height: 80px;">
+        <p><%= tweet.text %></p>
+      </div>
+    </section>
+    <footer style="clear:both;">
+
+    </footer>
+  </div>
+</script>

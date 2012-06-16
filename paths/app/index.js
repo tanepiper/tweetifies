@@ -154,9 +154,9 @@ module.exports = function(namespace, dnode, instance, client, connection) {
         */
 
         twit.stream('user', function(stream) {
-          stream.on('data', function(tweet) {
-            console.log('tweet', tweet);
-            client.incomingTweet(tweet);
+          stream.on('data', function(data) {
+            console.log('data', data);
+            client.incomingMessage(data);
           });
 
           stream.on('error', function(error) {
@@ -166,7 +166,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
 
           stream.on('destroy', function(destory) {
             console.log('destory', destory);
-            client.incomingDestroy(destory);
+            client.incomingError(destory);
           });
         });
       }
