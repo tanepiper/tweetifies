@@ -1,0 +1,12 @@
+<script type="text/template" id="user-details-template">
+<div>
+  <img class="pull-left" src="<%= profile_image_url %>" />
+  <div class="pull-left">
+    <h6><%= name %></h6>
+    <% if (description) { %>
+      <%= description %>
+    <% } %>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+</script>

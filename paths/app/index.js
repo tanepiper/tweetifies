@@ -1,22 +1,49 @@
+/**
+ * External dependencies
+ */
+var _ = require('underscore');
+var twitter = require('ntwitter');
+var request = require('request');
+var moment = require('moment');
+
+/**
+ * This module attaches the application to our dnode instance
+ */
 module.exports = function(namespace, dnode, instance, client, connection) {
 
-  var _ = require('underscore');
-  var twitter = require('ntwitter');
-  var request = require('request');
-  var moment = require('moment');
-
+  // Create the namespace on the DNode object
   dnode[namespace] = {};
 
-
+  /**
+   * Function to do a retweet, takes an ID and sends a status update, then
+   * returns the tweet data
+   */
   dnode[namespace].retweet = function(id, cb) {
-    console.log('Retweet request', id);
+
+    // Fetch the session data for our user
+    dnode.session(function(err, session) {
+      if (err) {
+        return cb(err);
+      }
+      instance.clients[session.user.screen_name].twit.retweetStatus(id, cb);
+    });
+  };
+
+  dnode[namespace].sendTweet = function(options, cb) {
+    if (!options || !options.status) {
+      return cb('You must pass a status to sendTweet');
+    }
+
+    _.extend(options, {
+      'include_entities': true
+    });
+
     dnode.session(function(err, session) {
       if (err) {
         return cb(err);
       }
 
-      var twit = new twitter(session.oauth);
-      twit.retweetStatus(id, cb);
+      instance.clients[session.user.screen_name].twit.verifyCredentials(function (err, data) {}).updateStatus(options.status, options, cb);
     });
   };
 
@@ -125,25 +152,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
   };
    */
 
-  dnode[namespace].sendTweet = function(options, cb) {
-    if (!options || !options.status) {
-      return cb('You must pass a status to sendTweet');
-    }
 
-    _.extend(options, {
-      'include_entities': true
-    });
-
-    dnode.session(function(err, session) {
-      if (err) {
-        return cb(err);
-      }
-
-      var twit = new twitter(session.oauth);
-
-      twit.verifyCredentials(function (err, data) {}).updateStatus(options.status, options, cb);
-    });
-  };
 
   /*
   dnode[namespace].getDirectMessages = function(params, cb) {
@@ -183,91 +192,82 @@ module.exports = function(namespace, dnode, instance, client, connection) {
 
   // Now we know the client and server have a connection
   connection.on('ready', function() {
+    console.log('Connection ready');
     // Get our session data
     dnode.session(function(err, session) {
       if (err) {
         return client.incomingError('Connection Ready Error in Session', err);
       }
 
+      instance.clients[session.user.screen_name] = {
+        session: session,
+        twit: new twitter(session.oauth)
+      };
+      console.log(instance.clients);
+
       // If we already have Oauth data in the session then we don't need to get it from the user
-      if (session.oauth) {
-        var twit = new twitter(session.oauth);
+      /**
+       * This is our function to generate the view data
+       */
+      var incomingMessage = function(message) {
+        console.log(message);
+        var output;
 
-        /**
-         * This is our function to generate the view data
-         */
-        var incomingMessage = function(message) {
-          var output;
+        if (message.friends) {
+          client.incomingMessage(null, null);
+        } else {
 
-          if (message.friends) {
-            client.incomingMessage(null, null);
-          } else {
+          var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
 
-            var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
-
-            if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
-              message.entities.urls.forEach(function(url){
-                text = text.replace(url.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
-              });
-            }
-
-            if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
-              message.entities.hashtags.forEach(function(hashtag){
-                text = text.replace('#' + hashtag.text, '<a target="_new" href="https://twitter.com/search/' + encodeURIComponent('#' + hashtag.text) + '" title="' + '#' + hashtag.text + '">' + '#' + hashtag.text + '</a>', 'gi');
-              });
-            }
-
-            if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
-              message.entities.user_mentions.forEach(function(user_mention){
-                text = text.replace('@' + user_mention.screen_name, '<a target="_new" href="http://twitter.com/' + user_mention.screen_name + '" title="' + '@' + user_mention.screen_name + '">' + '@' + user_mention.screen_name + '</a>', 'gi');
-              });
-            }
-
-            _.extend(message, {
-              data_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
-              text: text
+          if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
+            message.entities.urls.forEach(function(url){
+              text = text.replace(url.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
             });
-
-            // First we send this to redis
-            //instance.db.hset(session.user.user_id, message.id, JSON.stringify(message));
-
-            client.incomingMessage(null, message);
           }
-        };
 
-        /**
-         * Connect to the user stream
-         */
-        twit.stream('user', function(stream) {
+          if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
+            message.entities.hashtags.forEach(function(hashtag){
+              text = text.replace('#' + hashtag.text, '<a target="_new" href="https://twitter.com/search/' + encodeURIComponent('#' + hashtag.text) + '" title="' + '#' + hashtag.text + '">' + '#' + hashtag.text + '</a>', 'gi');
+            });
+          }
 
-          /*
-          instance.db.hkeys(session.user.user_id, function(err, replies) {
-            if (err) {
-              client.incomingError('Unable to backfill due to redis error: ' + err);
-            } else if (replies.length) {
-              client.incomingError('Unable to backfill - no messages for user');
-            } else {
-              replies.forEach(function(reply) {
-                console.log(reply);
-              });
-            }
-          });
-           */
+          if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
+            message.entities.user_mentions.forEach(function(user_mention){
+              text = text.replace('@' + user_mention.screen_name, '<a target="_new" href="http://twitter.com/' + user_mention.screen_name + '" title="' + '@' + user_mention.screen_name + '">' + '@' + user_mention.screen_name + '</a>', 'gi');
+            });
+          }
 
-          // When data comes in pass to incoming Message
-          stream.on('data', incomingMessage);
-
-          stream.on('error', function(error) {
-            console.log('error', error);
-            client.incomingError(error);
+          _.extend(message, {
+            data_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
+            text: text
           });
 
-          stream.on('destroy', function(destory) {
-            console.log('destory', destory);
-            client.incomingError(destory);
-          });
+          // First we send this to redis
+          //instance.db.hset(session.user.user_id, message.id, JSON.stringify(message));
+
+          client.incomingMessage(null, message);
+        }
+      };
+
+      /**
+       * Connect to the user stream
+       */
+      console.log(instance.clients[session.user.screen_name]);
+      instance.clients[session.user.screen_name].twit.stream('user', function(stream) {
+        instance.clients[session.user.screen_name].stream = stream;
+        // When data comes in pass to incoming Message
+        stream.on('data', incomingMessage);
+
+        stream.on('error', function(error) {
+          console.log('error', error);
+          client.incomingError(error);
         });
-      }
+
+        stream.on('destroy', function(destory) {
+          console.log('destory', destory);
+          client.incomingError(destory);
+        });
+      });
     });
   });
 

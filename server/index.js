@@ -29,6 +29,9 @@ module.exports = (function() {
           view_dir: __dirname
         }
       });
+
+      instance.clients = {};
+
      // Attach the express server for HTTP
       require('./express')(instance);
 

@@ -115,13 +115,16 @@ _.extend(Tweetifies, {
     });
   },
 
-  loadtemplate: function(tpl_name, cb) {
+  loadtemplate: function(tpl_name, data, cb) {
+    var output;
     if (Tweetifies._cache.templates[tpl_name]) {
-      cb( Tweetifies._cache.templates[tpl_name] );
+      output = Tweetifies._cache.templates[tpl_name](data);
+      cb( output );
     } else {
-      $.get('templates/' + tpl_name + '.html', function(data) {
-        Tweetifies._cache.templates[tpl_name] = _.template($(data).html());
-        cb( Tweetifies._cache.templates[tpl_name] );
+      $.get('templates/' + tpl_name + '.html', function(tpl) {
+        Tweetifies._cache.templates[tpl_name] = _.template($(tpl).html());
+        output = Tweetifies._cache.templates[tpl_name](data);
+        cb( output );
       });
     }
   },
@@ -160,26 +163,53 @@ _.extend(Tweetifies, {
 
     Tweetifies.saveMessage(message.id, message);
 
-    Tweetifies.loadtemplate('tweet', function(tpl) {
-      $('#twitter-output').prepend(tpl(message));
+    Tweetifies.loadtemplate('tweet', message, function(tpl_tweet) {
+      $('#twitter-output').prepend(tpl_tweet);
 
-      $('.brand', '#tweet-' + message.id).popover({
-        placement: 'bottom',
-        title: '@' + message.user.screen_name,
-        content: [
-          '<img class="pull-left" src="' + message.user.profile_image_url + '" />',
-          '<div class="pull-left">',
-            '<h6>' + message.user.name + '</h6>',
-            ( (message.user.description) ? '<p>' + message.user.description + '</p>' : '' ),
-          '</div>',
-          '<div style="clear: both;"></div>'
-        ].join('')
+      Tweetifies.loadtemplate('user_details', message.user, function(tpl_user) {
+        $('.brand', '#tweet-' + message.id).popover({
+          placement: 'bottom',
+          title: '@' + message.user.screen_name,
+          content: tpl_user
+        });
       });
 
+      if (message.geo) {
+        Tweetifies.loadtemplate('geo', message, function(tpl_map) {
+
+          $('.geo', '#tweet-' + message.id).popover({
+            placement: 'bottom',
+            title: '@' + message.user.screen_name,
+            content: tpl_map
+          });
+
+          var el = $('#map-' + message.id)[0];
+
+          var myOptions = {
+            center: new google.maps.LatLng(message.geo.coordinates[0], message.geo.coordinates[1]),
+            zoom: 8,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+          var map = new google.maps.Map(el, myOptions);
+
+          var marker = new google.maps.Marker({
+            position: map.getCenter(),
+            map: map,
+            title: ''
+          });
+
+          setTimeout(function() {
+            google.maps.event.trigger(map, 'resize');
+            map.panTo(marker.getPosition());
+          }, 1000);
+        });
+      }
+
       $('#tweet-' + message.id)
-      .find('.tweet-commands a').on('click', Tweetifies.handleButton)
-      .end()
+        .find('.tweet-commands a').on('click', Tweetifies.handleButton)
+        .end()
       .slideDown(1000);
+
     });
   },
 
