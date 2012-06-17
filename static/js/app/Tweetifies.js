@@ -236,7 +236,7 @@ _.extend(Tweetifies, {
       $('#tweet-text').off('keyup.reply');
     });
 
-    $('#twitter-input').append('<input id="in-reply-to" name="in-reply-to" type="hidden" value="' + id + '" />');
+    $('#twitter-input').append('<input id="in-reply-to" name="in-reply-to" type="hidden" value="' + message.id_str + '" />');
 
     $('#alerts')
       .removeClass('alert-error alert-warning alert-success alert-info')
