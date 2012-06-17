@@ -1,10 +1,13 @@
 <script type="text/template" id="tweet-template">
-  <div class="tweet well span5" id="tweet-<%= id %>" style="position:relative;" data-tweet="<%= id %>">
+  <div class="tweet well span5" id="tweet-<%= id %>" style="position:relative; display: none;" data-tweet="<%= id %>">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
+          <img class="pull-left" style="width: 40px; height: 40px;" src="<%= user.profile_image_url %>" />
+
           <a class="brand pull-left" href="#">@<%= user.screen_name %></a>
-          <ul class="nav pull-left">
+
+          <ul class="nav pull-right">
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Actions <b class="caret"></b></a>
               <ul class="dropdown-menu tweet-commands">
@@ -28,7 +31,7 @@
             <% } %>
 
           </ul>
-          <img class="pull-right" style="width: 40px; height: 40px;" src="<%= user.profile_image_url %>" />
+
         </div>
       </div>
     </div>

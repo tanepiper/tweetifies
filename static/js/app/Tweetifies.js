@@ -18,6 +18,7 @@ _.extend(Tweetifies, {
     templates: {},
     messages: {}
   },
+  user: {},
 
   geocode_status: false,
   geocode_watcher: null,
@@ -32,7 +33,16 @@ _.extend(Tweetifies, {
   },
 
   init: function() {
-    Tweetifies.loadDnode();
+    Tweetifies.loadDnode(function(remote, connection) {
+      remote.session(function(err, session) {
+        if (err) {
+          return console.log(err);
+        }
+
+        _.extend(Tweetifies.user, session.user);
+
+      });
+    });
 
     $('#tweet-text').on('keyup', function(e) {
       var len = $(this).val().length;
@@ -92,6 +102,7 @@ _.extend(Tweetifies, {
               .html('<i class="icon-remove-sign"></i> <strong>Uh oh...</strong>' + err);
           } else {
             $('#tweet-text').val('');
+            $('.chars-left').text('140');
           }
           $('#tweet-text').attr('disabled', false);
         });
@@ -128,7 +139,7 @@ _.extend(Tweetifies, {
     Tweetifies._cache.messages[id] = message;
   },
 
-  loadDnode: function() {
+  loadDnode: function(cb) {
     DNode({
       incomingMessage: Tweetifies.incomingMessage,
       incomingError: Tweetifies.incomingError
@@ -137,6 +148,7 @@ _.extend(Tweetifies, {
         remote: remote,
         connection: connection
       });
+      cb(remote, connection);
     });
   },
 
@@ -167,7 +179,7 @@ _.extend(Tweetifies, {
       $('#tweet-' + message.id)
       .find('.tweet-commands a').on('click', Tweetifies.handleButton)
       .end()
-      .fadeIn(1000);
+      .slideDown(1000);
     });
   },
 
@@ -220,7 +232,7 @@ _.extend(Tweetifies, {
     // Get the names of all the people involved
     if (message.entities.user_mentions.length > 0) {
       message.entities.user_mentions.forEach(function(mention) {
-        if (output.indexOf('@' + mention.screen_name + ' ') === -1) {
+        if (mention.screen_name !== Tweetifies.user.screen_name && output.indexOf('@' + mention.screen_name + ' ') === -1) {
           output.push('@' + mention.screen_name + ' ');
         }
       });

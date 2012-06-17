@@ -22,3 +22,14 @@ body {
 .dropdown-menu a.active {
   background-color: #CEDBEB;
 }
+
+.tweet .navbar .brand {
+  margin-left: 0;
+}
+
+#twitter-output {
+  position: relative;
+  height: 300px;
+  max-height: 500px;
+  overflow-y: scroll;
+}
