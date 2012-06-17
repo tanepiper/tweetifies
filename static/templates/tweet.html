@@ -21,6 +21,12 @@
                 <li><a class="spam" href="#"><i class="icon-signal"></i> Report as Spam</a></li>
               </ul>
             </li>
+            <% if (geo) { %>
+              <li>
+                <a class="geo" href="#"><i class="icon-globe icon-white"></i> Show Map</a></li>
+              </li>
+            <% } %>
+
           </ul>
           <img class="pull-right" style="width: 40px; height: 40px;" src="<%= user.profile_image_url %>" />
         </div>

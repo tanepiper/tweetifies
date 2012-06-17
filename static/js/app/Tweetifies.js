@@ -66,14 +66,21 @@ _.extend(Tweetifies, {
     $('#twitter-input a.tweet').on('click', function(e) {
       e.preventDefault();
 
-      var value = $('#tweet-text').val();
-      if (value.length > 0 && value.length <= 140) {
-        var to_send = {
-          status: value
-        };
+      var status = $('#tweet-text').val();
+      if (status.length > 0 && status.length <= 140) {
+        var to_send = _.extend({}, {
+          status: status
+        });
+
         if (Tweetifies.geocode_status) {
           to_send.lat = Tweetifies.current_position.latitude;
           to_send.long = Tweetifies.current_position.longitude;
+        }
+
+        if ($('input#in-reply-to').length > 0) {
+          _.extend(to_send, {
+            in_reply_to_status_id: $('input#in-reply-to').val()
+          });
         }
 
         $('#tweet-text').attr('disabled', true);
@@ -158,7 +165,7 @@ _.extend(Tweetifies, {
       });
 
       $('#tweet-' + message.id)
-      .find('a').on('click', Tweetifies.handleButton)
+      .find('.tweet-commands a').on('click', Tweetifies.handleButton)
       .end()
       .fadeIn(1000);
     });
@@ -171,38 +178,22 @@ _.extend(Tweetifies, {
   handleButton: function(e) {
     e.preventDefault();
 
-    var el = this;
-
-    var tweet_container = $(this).closest('.tweet');
-    var id = $(tweet_container).data('tweet');
-
     var output;
+
+    var tweet = $(this).closest('.tweet');
+    var id = $(tweet).data('tweet');
+
+    var action_clicked = $(this).attr('class');
+    var action_clicked_text = $(this).text();
+
+    // Load the message from the cache
     Tweetifies.loadMessage(id, function(err, message) {
-      console.log('Message Loaded', err, message);
       if (err) {
-        return Tweetifies.incomingError(message);
+        return Tweetifies.incomingError(err);
       }
 
-      var action_clicked = $(el).attr('class');
-
-      var action_clicked_text = $(this).text();
-
       if (action_clicked === 'reply') {
-        output = [];
-        if (message.entities.user_mentions.length > 0) {
-          message.entities.user_mentions.forEach(function(mention) {
-            if (output.indexOf('@' + mention.screen_name + ' ') === -1) {
-              output.push('@' + mention.screen_name + ' ');
-            }
-          });
-        }
-        output.push('@' + message.user.screen_name + ' ');
-        $('#tweet-text').val(output.join(''));
-
-        $('#tweet-text').focus(function() {
-          var end = $('#tweet-text').val().length;
-          $('#tweet-text').selectionStart = $('#tweet-text').selectionEnd = end;
-        });
+        Tweetifies.onReply(id, tweet, message);
 
       } else if (action_clicked === 'direct-message') {
         output = [];
@@ -211,13 +202,51 @@ _.extend(Tweetifies, {
       } else if (action_clicked === 'retweet') {
         var c = confirm('Retweet to your followers?');
         if (c) {
-          Tweetifies.remote.app.retweet(message.tweet_id, function() {
+          Tweetifies.remote.app.retweet(message.id_str, function() {
             console.log(arguments);
           });
         }
       }
     });
   },
+
+  onReply: function(id, tweet, message) {
+    var output = [];
+
+    if ($('input#in-reply-to').length > 0) {
+      $('input#in-reply-to').remove();
+    }
+
+    // Get the names of all the people involved
+    if (message.entities.user_mentions.length > 0) {
+      message.entities.user_mentions.forEach(function(mention) {
+        if (output.indexOf('@' + mention.screen_name + ' ') === -1) {
+          output.push('@' + mention.screen_name + ' ');
+        }
+      });
+    }
+    output.push('@' + message.user.screen_name + ' ');
+
+    // Set the value of the tweet text
+    $('#tweet-text').val(output.join(''));
+    $('#tweet-text').on('keyup.reply', function(e) {
+      if ($(this).val().length === 0) {
+        $('input#in-reply-to').remove();
+      }
+      $('#tweet-text').off('keyup.reply');
+    });
+
+    $('#twitter-input').append('<input id="in-reply-to" name="in-reply-to" type="hidden" value="' + id + '" />');
+
+    $('#alerts')
+      .removeClass('alert-error alert-warning alert-success alert-info')
+      .addClass('alert-info')
+      .html('This tweet has been set in reply to ' + output.join(', '))
+      .fadeIn(function() {
+        $(this).fadeOut();
+      });
+  },
+
     /*
     e.preventDefault();
     var id = $(this).attr('href');

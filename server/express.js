@@ -5,6 +5,7 @@ var express = require('express');
 var request = require('request');
 var fs = require('fs');
 var qs = require('qs');
+var _ = require('underscore');
 
 /**
  * This function creates an attaches our express and session store instances
@@ -31,52 +32,93 @@ module.exports = function(instance) {
   });
 
 
+  server.get('/login/twitter/return', function(req, res, next) {
+    _.extend(req.session.oauth, {
+      token: req.query.oauth_token,
+      verifier: req.query.oauth_verifier
+    });
+    // Now we need to get our access token for reading/posting data
+    request.post({
+      uri: 'https://api.twitter.com/oauth/access_token',
+      oauth: req.session.oauth
+    }, function(err, response, body) {
+      if (err || response.statusCode > 299) {
+        if (!err) {
+          console.log(response);
+          err = 'Error ' + response.statusCode;
+        }
+        return next(err);
+      }
+
+      var perm_token = qs.parse(body);
+      console.log(perm_token);
+      _.extend(req.session.oauth, {
+        access_token_key: perm_token.oauth_token,
+        access_token_secret: perm_token.oauth_token_secret,
+        token: null,
+        token_secret: null,
+        verifier: null,
+        callback: null
+      });
+
+      _.extend(req.session.user, {
+        screen_name: perm_token.screen_name,
+        user_id: perm_token.user_id
+      });
+
+
+      delete req.session.oauth.token;
+      delete req.session.oauth.token_secret;
+      delete req.session.oauth.verifier;
+      delete req.session.oauth.callback;
+
+
+      console.log('Session', req.session.oauth);
+
+      res.redirect('/');
+    });
+
+  });
+
   /**
    * Our route to handle twitter login and auth
    */
   server.get('/login/twitter', function(req, res, next) {
 
-    // The user already has a session so we don't need to re-authorise
-    if (req.session.oauth && !req.param('oauth_token') && !req.param('oauth_verifier')) {
+    if (req.session.oauth) {
       return res.redirect('/');
     } else {
-      // We assume here we need to create a new session oauth
+      var callback_url = 'http://' +
+          instance.options.oauth.base_url + ( (instance.options.dev) ?  ':' + instance.options.express.port :  '' ) +
+          '/login/twitter/return';
+
       req.session.oauth = {
-        callback: 'http://' + instance.options.oauth.base_url + ( (instance.options.dev) ?  ':' + instance.options.express.port :  '' ) + '/login/twitter',
+        callback: callback_url,
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret
       };
-    }
 
-    // Based on the incoming request we have requested our token and the user
-    // has authorised the app
-    if (req.param('oauth_token') && req.param('oauth_verifier')) {
-      req.session.oauth.token = req.query.oauth_token;
-      req.session.oauth.verifier = req.query.oauth_verifier;
+      req.session.user = {};
 
-      // Now we need to get our access token for reading/posting data
-      request.post({
-        uri: 'https://api.twitter.com/oauth/access_token',
-        oauth: req.session.oauth
-      }, function(err, response, body) {
-        var access_token = qs.parse(body);
-
-        req.session.oauth.access_token = access_token.oauth_token;
-        req.session.oauth.access_token_secret = access_token.oauth_token_secret;
-
-        res.redirect('/');
-      });
-    } else {
       request.post({
         uri: 'https://api.twitter.com/oauth/request_token',
         oauth: req.session.oauth
       }, function(err, response, body) {
+        if (err || response.statusCode > 299) {
+          if (!err) {
+            console.log(response);
+            err = 'Error ' + response.statusCode;
+          }
+          return next(err);
+        }
+
         var access_token = qs.parse(body);
+        _.extend(req.session.oauth, {
+          token: access_token.oauth_token,
+          token_secret: access_token.oauth_token_secret
+        });
 
-        req.session.oauth.token = access_token.oauth_token;
-        req.session.oauth.token_secret = access_token.oauth_token_secret;
-
-        res.redirect('https://twitter.com/oauth/authorize?oauth_token=' + access_token.oauth_token);
+        res.redirect('https://twitter.com/oauth/authorize?oauth_token=' + req.session.oauth.token);
       });
     }
   });

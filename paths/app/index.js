@@ -14,12 +14,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       if (err) {
         return cb(err);
       }
-      var twit = new twitter({
-        consumer_key: instance.options.oauth.consumer_key,
-        consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
-      });
+
+      var twit = new twitter(session.oauth);
       twit.retweetStatus(id, cb);
     });
   };
@@ -42,8 +38,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       var twit = new twitter({
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
+        access_token_key: session.oauth.token,
+        access_token_secret: session.oauth.token_secret
       });
 
       var interval = setInterval(function() {
@@ -69,8 +65,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       var twit = new twitter({
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
+        access_token_key: session.oauth.token,
+        access_token_secret: session.oauth.token_secret
       });
       twit.verifyCredentials(function (err, data) {
         if (err) {
@@ -106,8 +102,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       var twit = new twitter({
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
+        access_token_key: session.oauth.token,
+        access_token_secret: session.oauth.token_secret
       });
 
       twit.verifyCredentials(function (err, data) {
@@ -143,12 +139,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
         return cb(err);
       }
 
-      var twit = new twitter({
-        consumer_key: instance.options.oauth.consumer_key,
-        consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
-      });
+      var twit = new twitter(session.oauth);
+
       twit.verifyCredentials(function (err, data) {}).updateStatus(options.status, options, cb);
     });
   };
@@ -170,8 +162,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       var twit = new twitter({
         consumer_key: instance.options.oauth.consumer_key,
         consumer_secret: instance.options.oauth.consumer_secret,
-        access_token_key: session.oauth.access_token,
-        access_token_secret: session.oauth.access_token_secret
+        access_token_key: session.oauth.token,
+        token_secret: session.oauth.token_secret
       });
       twit.verifyCredentials(function (err, data) {}).getDirectMessages(cb);
     });
@@ -189,91 +181,81 @@ module.exports = function(namespace, dnode, instance, client, connection) {
   };
    */
 
-  /**
-   * This is our function to generate the view data
-   */
-  var incomingMessage = function(message) {
-    var output;
-
-    if (message.friends) {
-      this.incomingMessage(null, null);
-    } else {
-      //console.log('Incoming Message', message);
-      output = {
-        type: 'tweet',
-        id: message.id,
-        tweet_id: message.id_str,
-        date: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
-        user: _.extend({}, message.user),
-        entities: _.extend({}, message.entities)
-      };
-
-      var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
-
-
-      if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
-        message.entities.urls.forEach(function(url){
-          text = text.replace(url.url, '<a href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
-          output.entities.urls.push(url);
-        });
-      }
-
-      if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
-        message.entities.hashtags.forEach(function(hashtag){
-          text = text.replace('#' + hashtag.text, '<a href="/search/' + encodeURIComponent('#' + hashtag.text) + '" title="' + '#' + hashtag.text + '">' + '#' + hashtag.text + '</a>', 'gi');
-          output.entities.hashtags.push(hashtag);
-        });
-      }
-
-      if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
-        message.entities.user_mentions.forEach(function(user_mention){
-          text = text.replace('@' + user_mention.screen_name, '<a href="/search/' + encodeURIComponent('@' + user_mention.screen_name) + '" title="' + '@' + user_mention.screen_name + '">' + '@' + user_mention.screen_name + '</a>', 'gi');
-          output.entities.user_mentions.push(user_mention);
-        });
-      }
-
-      output.text = text;
-
-      this.incomingMessage(null, output);
-    }
-  };
-
   // Now we know the client and server have a connection
   connection.on('ready', function() {
     // Get our session data
     dnode.session(function(err, session) {
-
-
       if (err) {
         return client.incomingError('Connection Ready Error in Session', err);
       }
 
       // If we already have Oauth data in the session then we don't need to get it from the user
       if (session.oauth) {
-        var twit = new twitter({
-          consumer_key: instance.options.oauth.consumer_key,
-          consumer_secret: instance.options.oauth.consumer_secret,
-          access_token_key: session.oauth.access_token,
-          access_token_secret: session.oauth.access_token_secret
-        });
+        var twit = new twitter(session.oauth);
 
-        /*
-        twit
-        .verifyCredentials(function (err, data) {
-          console.log(data);
-        })
-        .getHomeTimeline({count: 20, include_entities: true}, function(err, data) {
-          client.incomingTweets(data);
-        });
-        */
+        /**
+         * This is our function to generate the view data
+         */
+        var incomingMessage = function(message) {
+          var output;
+
+          if (message.friends) {
+            client.incomingMessage(null, null);
+          } else {
+
+            var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
+
+            if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
+              message.entities.urls.forEach(function(url){
+                text = text.replace(url.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
+              });
+            }
+
+            if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
+              message.entities.hashtags.forEach(function(hashtag){
+                text = text.replace('#' + hashtag.text, '<a target="_new" href="https://twitter.com/search/' + encodeURIComponent('#' + hashtag.text) + '" title="' + '#' + hashtag.text + '">' + '#' + hashtag.text + '</a>', 'gi');
+              });
+            }
+
+            if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
+              message.entities.user_mentions.forEach(function(user_mention){
+                text = text.replace('@' + user_mention.screen_name, '<a target="_new" href="http://twitter.com/' + user_mention.screen_name + '" title="' + '@' + user_mention.screen_name + '">' + '@' + user_mention.screen_name + '</a>', 'gi');
+              });
+            }
+
+            _.extend(message, {
+              data_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
+              text: text
+            });
+
+            // First we send this to redis
+            //instance.db.hset(session.user.user_id, message.id, JSON.stringify(message));
+
+            client.incomingMessage(null, message);
+          }
+        };
 
         /**
          * Connect to the user stream
          */
         twit.stream('user', function(stream) {
 
+          /*
+          instance.db.hkeys(session.user.user_id, function(err, replies) {
+            if (err) {
+              client.incomingError('Unable to backfill due to redis error: ' + err);
+            } else if (replies.length) {
+              client.incomingError('Unable to backfill - no messages for user');
+            } else {
+              replies.forEach(function(reply) {
+                console.log(reply);
+              });
+            }
+          });
+           */
+
           // When data comes in pass to incoming Message
-          stream.on('data', incomingMessage.bind(client));
+          stream.on('data', incomingMessage);
 
           stream.on('error', function(error) {
             console.log('error', error);
