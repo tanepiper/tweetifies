@@ -200,104 +200,55 @@ module.exports = function(namespace, dnode, instance, client, connection) {
         return client.incomingError('Connection Ready Error in Session', err);
       }
 
-      var tinstance = instance.tweet_server.getOrCreateInstance(session, {
-        client: client
-      });
-      console.log(tinstance);
+      var tinstance = instance.tweet_server.getOrCreateInstance(session);
       if (tinstance) {
+        if (tinstance.client) {
+          tinstance.client = null;
+        }
+        tinstance.client = client;
 
-        // If we already have Oauth data in the session then we don't need to get it from the user
-        /**
-         * This is our function to generate the view data
-         */
-        var incomingMessage = function(message) {
-          //console.log(message);
-          var output;
+        var j = (tinstance.tweets.length > 50) ? 50 : tinstance.tweets.length;
+        for (var i = 0; j > i; j-- ) {
+          tinstance.sendMessage(tinstance.tweets[j]);
+        }
 
-          // This is the first message sent in the stream, for now we ignore it
-          if (message.friends) {
-            client.incomingMessage(null, null);
-
-          // We got a direct message
-          } else if (message.direct_message) {
-
-
-          } else if (message.event) {
-            // we got an event message
-            if (message.event === 'follow') {
-
+        if (!tinstance.stream) {
+          tinstance.verifyCredentials(function(err, result) {
+            if (err) {
+              return client.incomingError(err);
             }
 
-          // We got a plain old tweet
-          } else {
+            var createStream = function(i) {
+              i.twitter.stream('user', function(stream) {
+                i.stream = stream;
 
-            var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
+                // When data comes in pass to incoming Message
+                stream.on('data', i.incomingMessage.bind(tinstance));
+                stream.on('error', tinstance.incomingError.bind(tinstance));
 
-            if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
-              message.entities.urls.forEach(function(url) {
-                var display = (url.display_url) ? url.display_url : url.url;
-                var link = (url.expanded_url) ? url.expanded_url : url.url;
-                text = text.replace(url.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gi');
+                stream.on('destroy', function(destory) {
+                  createStream(i);
+                });
               });
-            }
+            };
 
-            if (message.entities && message.entities.media && message.entities.media.length > 0) {
-              message.entities.media.forEach(function(media) {
-                var display = (media.display_url) ? media.display_url : media.url;
-                var link = (media.expanded_url) ? media.expanded_url : media.url;
-
-                text = text.replace(media.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gi');
-              });
-            }
-
-            if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
-              text = text.replace(/(\B#[\w-]+)/gmi, '<a target="_blank" title="@$1" href="http://twitter.com/search/$1">$1</a>');
-            }
-
-            if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
-              text = text.replace(/(\B@[\w-]+)/gmi, '<a target="_blank" title="$1" href="http://twitter.com/$1">$1</a>');
-            }
-
-            _.extend(message, {
-              date_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
-              text_formatted: text
-            });
-
-            // First we send this to redis
-            //instance.db.hset(session.user.user_id, message.id, JSON.stringify(message));
-            tinstance.incomingStreamTweet(message);
-            client.incomingMessage(null, message);
-          }
-        };
-
-        /**
-         * Connect to the user stream
-         */
-        tinstance.verifyCredentials(function(err, result) {
-          if (err) {
-            return client.incomingError(err);
-          }
-
-          var j = (tinstance.tweets.length > 50) ? 50 : tinstance.tweets.length;
-          for (var i = 0; i < j; i++ ) {
-            incomingMessage(tinstance.tweets[i]);
-          }
-
-          tinstance.twitter.stream('user', function(stream) {
-            // When data comes in pass to incoming Message
-            stream.on('data', incomingMessage);
-
-            stream.on('error', function(error) {
-              console.log('error', error);
-              client.incomingError(error);
-            });
-
-            stream.on('destroy', function(destory) {
-              console.log('destory', destory);
-              client.incomingError(destory);
-            });
+            createStream(tinstance);
           });
-        });
+        }
+      }
+    });
+  });
+
+  connection.on('end', function() {
+    console.log('end');
+    // Get our session data
+    dnode.session(function(err, session) {
+      if (err) {
+        return client.incomingError('Connection Ready Error in Session', err);
+      }
+      var tinstance = instance.tweet_server.getOrCreateInstance(session);
+      if (tinstance) {
+        tinstance.client = null;
       }
     });
   });
