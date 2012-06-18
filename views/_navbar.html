@@ -2,7 +2,7 @@
   <div class="navbar-inner">
     <div class="container">
 
-      <a class="brand" href="#">Tweetifies</a>
+      <h1><a class="brand" href="#">Tweetifies</a></h1>
 
       <ul class="nav">
         <% if (show_login) { %>
@@ -10,14 +10,13 @@
             <a href="/login/twitter"><i class="icon-fire icon-white"></i>&nbsp;Login Via Twitter</a>
           </li>
         <% } else { %>
-          <li><a href="/">Home</a></li>
-
+          <li><a href="/home">Tweets</a></li>
+          <li><a href="/mentions">Mentions</a></li>
+          <li><a href="/direct-messages">Direct Messages</a></li>
 
         <% } %>
       </ul>
-      <form class="navbar-search pull-left" id="twitter-search">
-        <input type="text" class="search-query span2" placeholder="Search">
-      </form>
+
       <ul class="nav pull-right">
         <li><a href="/logout">Logout</a></li>
       </ul>

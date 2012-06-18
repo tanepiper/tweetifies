@@ -51,7 +51,7 @@ module.exports = function(instance) {
       }
 
       var perm_token = qs.parse(body);
-      console.log(perm_token);
+
       _.extend(req.session.oauth, {
         access_token_key: perm_token.oauth_token,
         access_token_secret: perm_token.oauth_token_secret,
@@ -72,8 +72,7 @@ module.exports = function(instance) {
       delete req.session.oauth.verifier;
       delete req.session.oauth.callback;
 
-
-      console.log('Session', req.session.oauth);
+      instance.tweet_server.getOrCreateInstance(req.session);
 
       res.redirect('/');
     });

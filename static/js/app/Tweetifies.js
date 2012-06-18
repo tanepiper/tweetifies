@@ -4,8 +4,10 @@
 window.Tweetifies = {};
 
 _.extend(Tweetifies, {
-  templates: [
-    'tweet'
+  preloadTemplates: [
+    'geo',
+    'tweet',
+    'user_details'
   ],
   regions: {
     navigation: '#top-navbar',
@@ -32,7 +34,34 @@ _.extend(Tweetifies, {
     console.log(error);
   },
 
+  views: {
+    '/': function(ctx, next) {
+
+    },
+
+    '/home': function(ctx, next) {
+
+    },
+    '/direct-messages': function(ctx, next) {
+
+    },
+    '/mentions': function(ctx, next) {
+
+    }
+  },
+
   init: function() {
+
+    Tweetifies.preloadTemplates.forEach(function(tpl) {
+      Tweetifies.loadtemplate(tpl);
+    });
+
+    page('/', Tweetifies.views['/']);
+    page('/home', Tweetifies.views['/home']);
+    page('/direct-messages', Tweetifies.views['/direct-messages']);
+    page('/mentions', Tweetifies.views['/mentions']);
+
+
     Tweetifies.loadDnode(function(remote, connection) {
       remote.session(function(err, session) {
         if (err) {
@@ -116,15 +145,21 @@ _.extend(Tweetifies, {
   },
 
   loadtemplate: function(tpl_name, data, cb) {
+    if (typeof data ==='function') {
+      cb = data;
+      data = null;
+    }
     var output;
-    if (Tweetifies._cache.templates[tpl_name]) {
+    if (data && Tweetifies._cache.templates[tpl_name]) {
       output = Tweetifies._cache.templates[tpl_name](data);
-      cb( output );
+      return cb && cb( output );
     } else {
       $.get('templates/' + tpl_name + '.html', function(tpl) {
         Tweetifies._cache.templates[tpl_name] = _.template($(tpl).html());
-        output = Tweetifies._cache.templates[tpl_name](data);
-        cb( output );
+        if (data) {
+          output = Tweetifies._cache.templates[tpl_name](data);
+        }
+        return cb && cb( output );
       });
     }
   },

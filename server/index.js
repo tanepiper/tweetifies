@@ -32,6 +32,8 @@ module.exports = (function() {
 
       instance.clients = {};
 
+      require('./tweet_server')(instance);
+
      // Attach the express server for HTTP
       require('./express')(instance);
 
