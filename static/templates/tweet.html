@@ -36,7 +36,16 @@
       </div>
     </div>
     <div class="span4">
-      <p><%= text %></p>
+      <p><%= text_formatted %></p>
+    </div>
+
+    <div class="span4">
+      <p>
+        Posted <span class="timeago"></span> via <%= source %>
+        <% if (in_reply_to_screen_name) { %>
+          in reply to <a target="_new" href="http://twitter.com/<%= in_reply_to_screen_name %>"><%= in_reply_to_screen_name %></a>
+        <% } %>
+      </p>
     </div>
   </div>
 </script>

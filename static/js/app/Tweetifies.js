@@ -3,6 +3,39 @@
  */
 window.Tweetifies = {};
 
+function Notifier() {}
+
+// Returns "true" if this browser supports notifications.
+Notifier.prototype.HasSupport = function() {
+  if (window.webkitNotifications) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+// Request permission for this page to send notifications. If allowed,
+// calls function "cb" with true.
+Notifier.prototype.RequestPermission = function(cb) {
+  window.webkitNotifications.requestPermission(function() {
+    if (cb) { cb(window.webkitNotifications.checkPermission() === 0); }
+  });
+};
+
+// Popup a notification with icon, title, and body. Returns false if
+// permission was not granted.
+Notifier.prototype.Notify = function(icon, title, body) {
+  if (window.webkitNotifications.checkPermission() === 0) {
+    var popup = window.webkitNotifications.createNotification(
+    icon, title, body);
+    popup.show();
+
+    return true;
+  }
+
+  return false;
+};
+
 _.extend(Tweetifies, {
   preloadTemplates: [
     'geo',
@@ -21,6 +54,8 @@ _.extend(Tweetifies, {
     messages: {}
   },
   user: {},
+
+  desktop_message_permission: 1,
 
   geocode_status: false,
   geocode_watcher: null,
@@ -61,6 +96,31 @@ _.extend(Tweetifies, {
     page('/direct-messages', Tweetifies.views['/direct-messages']);
     page('/mentions', Tweetifies.views['/mentions']);
 
+
+    Tweetifies.Notifier = new Notifier();
+
+    /*
+    if (Tweetifies.desktop_message_permission === 0) {
+      $('.desktop-notifications').removeClass('off').addClass('on');
+      $('.desktop-notifications i').removeClass('icon-remove-sign').addClass('icon-ok-sign');
+    }
+     */
+
+    $('.desktop-notifications').on('click', function(e) {
+      e.preventDefault();
+
+      if (!Tweetifies.Notifier) {
+        Tweetifies.Notifier = new Notifier();
+      }
+
+      Tweetifies.Notifier.RequestPermission(function(can) {
+        if (can) {
+          $(this).removeClass('off').addClass('on');
+          $('i', this).removeClass('icon-remove-sign').addClass('icon-ok-sign');
+          Tweetifies.Notifier.Notify('', 'Tweetifies', 'Desktop Notifications switched on');
+        }
+      });
+    });
 
     Tweetifies.loadDnode(function(remote, connection) {
       remote.session(function(err, session) {
@@ -249,6 +309,17 @@ _.extend(Tweetifies, {
         .find('.tweet-commands a').on('click', Tweetifies.handleButton)
         .end()
       .slideDown(1000);
+
+      if (message.in_reply_to_screen_name && message.in_reply_to_screen_name === Tweetifies.user.screen_name && Tweetifies.Notifier) {
+        Tweetifies.Notifier.Notify(message.user.profile_image_url, 'Tweet From @' + message.user.screen_name, message.text);
+      }
+
+      $('div.tweet').each(function() {
+        var id = $(this).data('tweet');
+        var message = Tweetifies._cache.messages[id];
+        var ago = moment(message.created_at).from();
+        $('.timeago', this).text(ago);
+      });
 
     });
   },

@@ -216,6 +216,10 @@ module.exports = function(namespace, dnode, instance, client, connection) {
 
           if (message.friends) {
             client.incomingMessage(null, null);
+          } else if (message.event) {
+            if (message.event === 'follow') {
+
+            }
           } else {
 
             var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
@@ -228,7 +232,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
 
             if (message.entities && message.entities.media && message.entities.media.length > 0) {
               message.entities.media.forEach(function(media){
-                text = text.replace(media.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
+                text = text.replace(media.url, '<a target="_new" href="' + media.expanded_url + '" title="' + media.expanded_url + '">' + media.display_url + '</a>', 'gi');
               });
             }
 
@@ -245,8 +249,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
             }
 
             _.extend(message, {
-              data_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
-              text: text
+              date_display: moment(message.created_at).format("MMM Do YYYY, hh:mm:ss"),
+              text_formatted: text
             });
 
             // First we send this to redis
@@ -261,7 +265,6 @@ module.exports = function(namespace, dnode, instance, client, connection) {
          */
         tinstance.verifyCredentials(function(err, result) {
           if (err) {
-            console.log('error', err);
             return client.incomingError(err);
           }
 
