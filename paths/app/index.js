@@ -25,7 +25,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       if (err) {
         return cb(err);
       }
-      instance.clients[session.user.screen_name].twit.retweetStatus(id, cb);
+      instance.tweet_server.getOrCreateInstance(session).twitter.retweetStatus(id, cb);
     });
   };
 
@@ -43,7 +43,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
         return cb(err);
       }
 
-      instance.clients[session.user.screen_name].twit.verifyCredentials(function (err, data) {}).updateStatus(options.status, options, cb);
+      instance.tweet_server.getOrCreateInstance(session).twitter.updateStatus(options.status, options, cb);
     });
   };
 
@@ -223,6 +223,12 @@ module.exports = function(namespace, dnode, instance, client, connection) {
             if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
               message.entities.urls.forEach(function(url){
                 text = text.replace(url.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
+              });
+            }
+
+            if (message.entities && message.entities.media && message.entities.media.length > 0) {
+              message.entities.media.forEach(function(media){
+                text = text.replace(media.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
               });
             }
 

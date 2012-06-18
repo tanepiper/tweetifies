@@ -79,6 +79,7 @@ _.extend(Tweetifies, {
       $('.chars-left').text(left);
     });
 
+    /*
     $('.geocode').on('click', function() {
       console.log($(this).hasClass('on'));
 
@@ -101,6 +102,7 @@ _.extend(Tweetifies, {
         $(this).addClass('active');
       }
     });
+     */
 
     $('#twitter-input a.tweet').on('click', function(e) {
       e.preventDefault();
@@ -125,10 +127,11 @@ _.extend(Tweetifies, {
         $('#tweet-text').attr('disabled', true);
         Tweetifies.remote.app.sendTweet(to_send, function(err, tweet) {
           if (err) {
+            console.error(err);
             $('#alerts')
               .removeClass('alert-success alert-info alert-warning')
               .addClass('alert-error')
-              .html('<i class="icon-remove-sign"></i> <strong>Uh oh...</strong>' + err);
+              .html('<i class="icon-remove-sign"></i> <strong>Uh oh...</strong>' + err.toString());
           } else {
             $('#tweet-text').val('');
             $('.chars-left').text('140');
@@ -209,6 +212,7 @@ _.extend(Tweetifies, {
         });
       });
 
+      /*
       if (message.geo) {
         Tweetifies.loadtemplate('geo', message, function(tpl_map) {
 
@@ -239,6 +243,7 @@ _.extend(Tweetifies, {
           }, 1000);
         });
       }
+       */
 
       $('#tweet-' + message.id)
         .find('.tweet-commands a').on('click', Tweetifies.handleButton)
