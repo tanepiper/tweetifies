@@ -311,7 +311,14 @@ _.extend(Tweetifies, {
       .slideDown(1000);
 
       if (message.in_reply_to_screen_name && message.in_reply_to_screen_name === Tweetifies.user.screen_name && Tweetifies.Notifier) {
+        $('#tweet-' + message.id).css({
+          'background-color': '#BEF0F0'
+        });
         Tweetifies.Notifier.Notify(message.user.profile_image_url, 'Tweet From @' + message.user.screen_name, message.text);
+      } else if (message.user.screen_name === Tweetifies.user.screen_name) {
+        $('#tweet-' + message.id).css({
+          'background-color': '#EBEBBE'
+        });
       }
 
       $('div.tweet').each(function() {
@@ -355,8 +362,16 @@ _.extend(Tweetifies, {
       } else if (action_clicked === 'retweet') {
         var c = confirm('Retweet to your followers?');
         if (c) {
-          Tweetifies.remote.app.retweet(message.id_str, function() {
-            console.log(arguments);
+          Tweetifies.remote.app.retweet(message.id_str, function(err, tweet) {
+            if (err) {
+              Tweetifies.incomingError(err);
+            } else {
+              var origional_tweet = tweet.retweeted_status.id;
+              $('#tweet-' + origional_tweet).css({
+                'background-color': '#E4FAD2'
+              });
+              $('.meta p', '#tweet-' + origional_tweet).html($('.meta p', '#tweet-' + origional_tweet).html() + ' Retweeted ' + tweet.retweet_count + ' times');
+            }
           });
         }
       }
