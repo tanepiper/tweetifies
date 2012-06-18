@@ -214,38 +214,48 @@ module.exports = function(namespace, dnode, instance, client, connection) {
           //console.log(message);
           var output;
 
+          // This is the first message sent in the stream, for now we ignore it
           if (message.friends) {
             client.incomingMessage(null, null);
+
+          // We got a direct message
+          } else if (message.direct_message) {
+
+
           } else if (message.event) {
+            // we got an event message
             if (message.event === 'follow') {
 
             }
+
+          // We got a plain old tweet
           } else {
 
             var text = message.text.replace(message.user.screen_name, '@' + message.user.screen_name, 'gi');
 
             if (message.entities && message.entities.urls && message.entities.urls.length > 0) {
-              message.entities.urls.forEach(function(url){
-                text = text.replace(url.url, '<a target="_new" href="' + url.expanded_url + '" title="' + url.expanded_url + '">' + url.display_url + '</a>', 'gi');
+              message.entities.urls.forEach(function(url) {
+                var display = (url.display_url) ? url.display_url : url.url;
+                var link = (url.expanded_url) ? url.expanded_url : url.url;
+                text = text.replace(url.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gi');
               });
             }
 
             if (message.entities && message.entities.media && message.entities.media.length > 0) {
-              message.entities.media.forEach(function(media){
-                text = text.replace(media.url, '<a target="_new" href="' + media.expanded_url + '" title="' + media.expanded_url + '">' + media.display_url + '</a>', 'gi');
+              message.entities.media.forEach(function(media) {
+                var display = (media.display_url) ? media.display_url : media.url;
+                var link = (media.expanded_url) ? media.expanded_url : media.url;
+
+                text = text.replace(media.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gi');
               });
             }
 
             if (message.entities && message.entities.hashtags && message.entities.hashtags.length > 0) {
-              message.entities.hashtags.forEach(function(hashtag){
-                text = text.replace('#' + hashtag.text, '<a target="_new" href="https://twitter.com/search/' + encodeURIComponent('#' + hashtag.text) + '" title="' + '#' + hashtag.text + '">' + '#' + hashtag.text + '</a>', 'gi');
-              });
+              text = text.replace(/(\B#[\w-]+)/gmi, '<a target="_blank" title="@$1" href="http://twitter.com/search/$1">$1</a>');
             }
 
             if (message.entities && message.entities.user_mentions && message.entities.user_mentions.length > 0) {
-              message.entities.user_mentions.forEach(function(user_mention){
-                text = text.replace('@' + user_mention.screen_name, '<a target="_new" href="http://twitter.com/' + user_mention.screen_name + '" title="' + '@' + user_mention.screen_name + '">' + '@' + user_mention.screen_name + '</a>', 'gi');
-              });
+              text = text.replace(/(\B@[\w-]+)/gmi, '<a target="_blank" title="$1" href="http://twitter.com/$1">$1</a>');
             }
 
             _.extend(message, {
