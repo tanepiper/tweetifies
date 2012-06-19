@@ -208,8 +208,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
         tinstance.client = client;
 
         var j = (tinstance.tweets.length > 50) ? 50 : tinstance.tweets.length;
-        for (var i = 0; j > i; j-- ) {
-          tinstance.sendMessage(tinstance.tweets[j]);
+        for (var i = 0; i < j; i++ ) {
+          tinstance.sendMessage(tinstance.tweets[i], true);
         }
 
         if (!tinstance.stream) {

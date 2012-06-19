@@ -61,8 +61,10 @@ _.extend(Tweetifies, {
   geocode_watcher: null,
   current_position: null,
 
+  message_queue: [],
+
   onPositionUpdate: function(position) {
-    console.log(position);
+    Tweetifies.current_position = position.coords;
   },
 
   onPositionError: function(error) {
@@ -139,9 +141,7 @@ _.extend(Tweetifies, {
       $('.chars-left').text(left);
     });
 
-    /*
     $('.geocode').on('click', function() {
-      console.log($(this).hasClass('on'));
 
       if ($(this).hasClass('on')) {
         Tweetifies.geocode_status = true;
@@ -162,7 +162,7 @@ _.extend(Tweetifies, {
         $(this).addClass('active');
       }
     });
-     */
+
 
     $('#twitter-input a.tweet').on('click', function(e) {
       e.preventDefault();
@@ -253,13 +253,50 @@ _.extend(Tweetifies, {
     });
   },
 
-  incomingMessage: function(err, message) {
+  incomingMessage: function(err, message, render_now) {
     if (!message || message.friends) {
       console.log('Message Skipped');
       return;
     }
 
     Tweetifies.saveMessage(message.id, message);
+    if (render_now) {
+      return Tweetifies.renderMessage(message);
+    }
+    Tweetifies.message_queue.push(message);
+
+    $('#alerts')
+      .removeClass('alert-error alert-warning alert-success alert-info')
+      .addClass('alert-info')
+      .html('<button class="close" data-dismiss="alert">x</button><strong>' +
+        '<a href="#" class="display-queue">Load ' + Tweetifies.message_queue.length + ' tweets</a></strong>'
+      );
+
+    if( $('#alerts').not(':visible') ) {
+      $('#alerts').fadeIn();
+
+      $('.display-queue').off('click').on('click', function(e) {
+        e.preventDefault();
+        var len = Tweetifies.message_queue.length;
+        for (var i = 0; i < Tweetifies.message_queue.length + 1; i++) {
+          var message = Tweetifies.message_queue.shift();
+          console.log(message);
+          Tweetifies.renderMessage(message);
+        }
+
+        /*
+        console.log('display-queue');
+        e.preventDefault();
+        Tweetifies.message_queue.forEach(function(message, i, arr) {
+          arr.splice(i, 1);
+          Tweetifies.renderMessage(message);
+        });
+         */
+        $('#alerts').html('').fadeOut();
+      });
+    }
+  },
+  renderMessage: function(message) {
 
     Tweetifies.loadtemplate('tweet', message, function(tpl_tweet) {
       $('#twitter-output').prepend(tpl_tweet);

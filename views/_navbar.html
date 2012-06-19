@@ -13,46 +13,49 @@
           <li><a href="/home">Tweets</a></li>
           <li><a href="/mentions">Mentions</a></li>
           <li><a href="/direct-messages">Direct Messages</a></li>
-
         <% } %>
       </ul>
 
-      <ul class="nav pull-right">
-        <li><a class="desktop-notifications off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
-        <li><a href="/logout">Logout</a></li>
-      </ul>
+      <% if (!show_login) { %>
+        <ul class="nav pull-right">
+          <li><a class="desktop-notifications off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
+          <li><a href="/logout">Logout</a></li>
+        </ul>
+      <% } %>
     </div>
   </div>
-  <div class="hero-unit">
-    <h2 class="pull-left">Your Twitter Feed</h2>
-    <p class="pull-right">Left: <span class="chars-left">140</span> characters</p>
-    <form id="twitter-input">
-      <fieldset>
-        <div class="control-group">
-          <div class="controls">
-            <textarea maxlength="140" class="input-xlarge" id="tweet-text" rows="3" style="width: 100%;" placeholder="What do you want to say?"></textarea>
-          </div>
-          <div class="navbar">
-            <div class="navbar-inner">
-              <div class="container">
-                <ul class="nav">
-                  <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Geocode <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                      <li><a class="geocode on" rel="on" href="#"><i class="icon-ok-sign"></i> On</a></li>
-                      <li><a class="geocode off active" rel="off" href="#"><i class="icon-remove-sign"></i> Off</a></li>
-                    </ul>
-                  </li>
-                  <li><a class="upload" >Upload Image</a></li>
-                </ul>
-                <ul class="nav pull-right">
-                  <li><a class="tweet" href="#">Tweet</a></li>
-                </ul>
+  <% if (!show_login) { %>
+    <div class="hero-unit">
+      <h2 class="pull-left">Your Twitter Feed</h2>
+      <p class="pull-right">Left: <span class="chars-left">140</span> characters</p>
+      <form id="twitter-input">
+        <fieldset>
+          <div class="control-group">
+            <div class="controls">
+              <textarea maxlength="140" class="input-xlarge" id="tweet-text" rows="3" style="width: 100%;" placeholder="What do you want to say?"></textarea>
+            </div>
+            <div class="navbar">
+              <div class="navbar-inner">
+                <div class="container">
+                  <ul class="nav">
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Geocode <b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a class="geocode on" rel="on" href="#"><i class="icon-ok-sign"></i> On</a></li>
+                        <li><a class="geocode off active" rel="off" href="#"><i class="icon-remove-sign"></i> Off</a></li>
+                      </ul>
+                    </li>
+                    <li><a class="upload" >Upload Image</a></li>
+                  </ul>
+                  <ul class="nav pull-right">
+                    <li><a class="tweet" href="#">Tweet</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </fieldset>
-    </form>
-  </div>
+        </fieldset>
+      </form>
+    </div>
+  <% } %>
 </div>

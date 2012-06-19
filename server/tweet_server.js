@@ -32,9 +32,9 @@ module.exports = function(instance) {
       this.twitter.verifyCredentials(cb);
     };
 
-    tinstance.sendMessage = function(data) {
+    tinstance.sendMessage = function(data, render_now) {
       if (this.client) {
-        this.client.incomingMessage(null, data);
+        this.client.incomingMessage(null, data, render_now);
       } else {
         console.log('no client');
       }
@@ -48,7 +48,7 @@ module.exports = function(instance) {
 
       // This is the first message sent in the stream, for now we ignore it
       if (message.friends) {
-        this.sendMessage(null);
+        //this.sendMessage(null);
       // We got a direct message
       } else if (message.direct_message) {
 
@@ -94,8 +94,8 @@ module.exports = function(instance) {
           text_formatted: text
         });
 
-        this.tweets.unshift(message);
-        this.sendMessage(message);
+        this.tweets.push(message);
+        this.sendMessage(message, false);
       }
     };
 
