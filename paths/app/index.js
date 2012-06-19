@@ -11,13 +11,86 @@ var moment = require('moment');
  */
 module.exports = function(namespace, dnode, instance, client, connection) {
 
+  /**
+   * Here we have an incoming connection
+   */
+  connection.on('ready', function() {
+    console.log('Connection ready');
+
+    // Get our session data
+    dnode.session(function(err, session) {
+      if (err) {
+        return client.incomingError('Connection Ready Error in Session', err);
+      }
+
+      var createStream = function(i) {
+        i.verifyCredentials(function(err, result) {
+          if (err) {
+            return client.incomingError(err);
+          }
+          i.profile = result;
+
+          i.twitter.stream('user', function(stream) {
+            i.stream = stream;
+
+            // When data comes in pass to incoming Message
+            stream.on('data', i.incomingMessage.bind(tinstance));
+            stream.on('error', tinstance.incomingError.bind(tinstance));
+
+            stream.on('destroy', function(destory) {
+              createStream(i);
+            });
+          });
+        });
+      };
+
+      var tinstance = instance.tweet_server.getOrCreateInstance(session);
+
+      if (tinstance) {
+        if (tinstance.client) {
+          tinstance.client = null;
+        }
+        tinstance.client = client;
+
+        var i = tinstance.tweets.length;
+        var j = (tinstance.tweets.length > 50) ? tinstance.tweets.length - 50 : 0;
+
+        for (; j < i; j++ ) {
+          tinstance.sendMessage(tinstance.tweets[j], true);
+        }
+        if (!tinstance.stream) {
+          createStream(tinstance);
+        }
+      } else {
+        client.incomingError('Unable to get instance');
+      }
+    });
+  });
+
+  connection.on('end', function() {
+    console.log('end');
+    // Get our session data
+    dnode.session(function(err, session) {
+      if (err) {
+        return client.incomingError('Connection Ready Error in Session', err);
+      }
+      var tinstance = instance.tweet_server.getOrCreateInstance(session);
+      if (tinstance) {
+        tinstance.client = null;
+      }
+    });
+  });
+
+
+
   // Create the namespace on the DNode object
-  dnode[namespace] = {};
+  //dnode[namespace] = {};
 
   /**
    * Function to do a retweet, takes an ID and sends a status update, then
    * returns the tweet data
    */
+  /*
   dnode[namespace].retweet = function(id, cb) {
 
     // Fetch the session data for our user
@@ -46,8 +119,6 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       instance.tweet_server.getOrCreateInstance(session).twitter.updateStatus(options.status, options, cb);
     });
   };
-
-  /*
 
   dnode[namespace].search = function(term, params, cb) {
     if (typeof params === 'function') {
@@ -150,11 +221,7 @@ module.exports = function(namespace, dnode, instance, client, connection) {
       });
     });
   };
-   */
 
-
-
-  /*
   dnode[namespace].getDirectMessages = function(params, cb) {
     if (typeof params === 'function') {
       cb = params;
@@ -190,69 +257,8 @@ module.exports = function(namespace, dnode, instance, client, connection) {
   };
    */
 
-  // Now we know the client and server have a connection
-  connection.on('ready', function() {
-    console.log('Connection ready');
 
-    // Get our session data
-    dnode.session(function(err, session) {
-      if (err) {
-        return client.incomingError('Connection Ready Error in Session', err);
-      }
 
-      var tinstance = instance.tweet_server.getOrCreateInstance(session);
-      if (tinstance) {
-        if (tinstance.client) {
-          tinstance.client = null;
-        }
-        tinstance.client = client;
 
-        var i = tinstance.tweets.length;
-        var j = (tinstance.tweets.length > 50) ? tinstance.tweets.length - 50 : 0;
-
-        for (; j < i; j++ ) {
-          tinstance.sendMessage(tinstance.tweets[j], true);
-        }
-
-        if (!tinstance.stream) {
-          tinstance.verifyCredentials(function(err, result) {
-            if (err) {
-              return client.incomingError(err);
-            }
-
-            var createStream = function(i) {
-              i.twitter.stream('user', function(stream) {
-                i.stream = stream;
-
-                // When data comes in pass to incoming Message
-                stream.on('data', i.incomingMessage.bind(tinstance));
-                stream.on('error', tinstance.incomingError.bind(tinstance));
-
-                stream.on('destroy', function(destory) {
-                  createStream(i);
-                });
-              });
-            };
-
-            createStream(tinstance);
-          });
-        }
-      }
-    });
-  });
-
-  connection.on('end', function() {
-    console.log('end');
-    // Get our session data
-    dnode.session(function(err, session) {
-      if (err) {
-        return client.incomingError('Connection Ready Error in Session', err);
-      }
-      var tinstance = instance.tweet_server.getOrCreateInstance(session);
-      if (tinstance) {
-        tinstance.client = null;
-      }
-    });
-  });
 
 };

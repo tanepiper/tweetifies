@@ -253,6 +253,10 @@ _.extend(Tweetifies, {
     });
   },
 
+  incomingProfile: function(profile) {
+    console.log(profile);
+  },
+
   incomingMessage: function(err, message, render_now) {
     if (!message || message.friends) {
       console.log('Message Skipped');

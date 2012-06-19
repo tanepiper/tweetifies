@@ -72,9 +72,15 @@ module.exports = function(instance) {
       delete req.session.oauth.verifier;
       delete req.session.oauth.callback;
 
-      instance.tweet_server.getOrCreateInstance(req.session);
 
-      res.redirect('/');
+      var i = instance.tweet_server.getOrCreateInstance(req.session);
+      i.verifyCredentials(function(err, profile) {
+        if (err) {
+          return next(err);
+        }
+        i.profile = profile;
+        res.redirect('/');
+      });
     });
 
   });
