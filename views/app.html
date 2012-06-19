@@ -1,13 +1,15 @@
 <div class="row">
-  <% if (show_login) { %>
-    <div class="hero-unit">
-      <h1>Tweetifies</h1>
-      <a href="/login/twitter"><i class="icon-fire"></i>&nbsp;Login Via Twitter</a>
-    </div>
-  <% } else { %>
-    <div id="alerts" class="alert"></div>
+  <div id="alerts" class="alert" style="display:none;" />
 
-    <div id="twitter-output" class="span6"></div>
-    <div id="twitter-sidebar" class="span6"></div>
-  <% } %>
+  <div id="twitter-output" class="span6" />   <div id="twitter-sidebar" class="span6" />
 </div>
+
+<script type="text/javascript" src="/dnode.js"></script>
+<script src="/js/app/Tweetifies.js"></script>
+<script src="/js/app/Tweet.js"></script>
+
+<script type="text/javascript">
+  $(function() {
+    Tweetifies.init();
+  });
+</script>

@@ -5,18 +5,18 @@
       <h1><a class="brand" href="#">Tweetifies</a></h1>
 
       <ul class="nav">
-        <% if (show_login) { %>
-          <li>
-            <a href="/login/twitter"><i class="icon-fire icon-white"></i>&nbsp;Login Via Twitter</a>
-          </li>
-        <% } else { %>
+        <% if (session.oauth) { %>
           <li><a href="/home">Tweets</a></li>
           <li><a href="/mentions">Mentions</a></li>
           <li><a href="/direct-messages">Direct Messages</a></li>
+        <% } else { %>
+          <li>
+            <a href="/login/twitter"><i class="icon-fire icon-white"></i>&nbsp;Login Via Twitter</a>
+          </li>
         <% } %>
       </ul>
 
-      <% if (!show_login) { %>
+      <% if (session.oauth) { %>
         <ul class="nav pull-right">
           <li><a class="desktop-notifications off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
           <li><a href="/logout">Logout</a></li>
@@ -24,7 +24,7 @@
       <% } %>
     </div>
   </div>
-  <% if (!show_login) { %>
+  <% if (session.oauth) { %>
     <div class="hero-unit">
       <h2 class="pull-left">Your Twitter Feed</h2>
       <p class="pull-right">Left: <span class="chars-left">140</span> characters</p>

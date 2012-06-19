@@ -30,7 +30,7 @@ module.exports = (function() {
         }
       });
 
-      instance.clients = {};
+      instance.users = {};
 
       require('./tweet_server')(instance);
 

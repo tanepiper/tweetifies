@@ -243,7 +243,7 @@ _.extend(Tweetifies, {
   loadDnode: function(cb) {
     DNode({
       incomingMessage: Tweetifies.incomingMessage,
-      incomingError: Tweetifies.incomingError
+      onError: Tweetifies.onError
     }).connect(function(remote, connection) {
       _.extend(Tweetifies, {
         remote: remote,
@@ -372,7 +372,7 @@ _.extend(Tweetifies, {
     });
   },
 
-  incomingError: function(error) {
+  onError: function(error) {
     console.error('Incoming Error', error);
   },
 
