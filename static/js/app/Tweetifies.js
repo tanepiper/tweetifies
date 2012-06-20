@@ -242,7 +242,7 @@ _.extend(Tweetifies, {
 
   loadDnode: function(cb) {
     DNode({
-      incomingMessage: Tweetifies.incomingMessage,
+      onTweet: Tweetifies.onTweet,
       onError: Tweetifies.onError
     }).connect(function(remote, connection) {
       _.extend(Tweetifies, {
@@ -257,7 +257,17 @@ _.extend(Tweetifies, {
     console.log(profile);
   },
 
-  incomingMessage: function(err, message, render_now) {
+  onTweet: function(tweet, defer_render) {
+    console.log('Tweet', tweet);
+    Tweetifies._cache.messages[tweet.data.id_str] = tweet;
+
+    var item = $(tweet.tpl);
+    $('#twitter-output').prepend(item);
+    item.slideDown();
+  },
+
+  incomingMessage: function(message, render_now) {
+    console.log(message);
     if (!message || message.friends) {
       console.log('Message Skipped');
       return;

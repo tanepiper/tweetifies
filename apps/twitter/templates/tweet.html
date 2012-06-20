@@ -1,0 +1,54 @@
+<div class="tweet well span5" id="tweet-<%= tweet.id_str %>" style="position:relative; display: none;" data-tweet="<%= tweet.id_str %>">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="container">
+        <img class="pull-left" style="width: 40px; height: 40px;" src="<%= tweet.user.profile_image_url %>" />
+
+        <a class="brand pull-left" href="#">@<%= tweet.user.screen_name %></a>
+
+        <ul class="nav pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Actions <b class="caret"></b></a>
+            <ul class="dropdown-menu tweet-commands">
+              <li class="nav-header">Tweet</li>
+              <li><a class="reply" href="#"><i class="icon-hand-left"></i> Reply</a></li>
+              <li><a class="retweet" href="#"><i class="icon-refresh"></i> Retweet</a></li>
+              <li><a class="favourite" href="#"><i class="icon-heart"></i> Favourite</a></li>
+              <li><a class="delete disabled" disabled="disabled" href="#"><i class="icon-trash"></i> Delete</a></li>
+              <li class="divider"></li>
+              <li class="nav-header">User</li>
+              <li><a class="user-profile" href="#"><i class="icon-user"></i> View Profile</a></li>
+              <li><a class="direct-message" href="#"><i class="icon-envelope"></i> Direct Message</a></li>
+              <li><a class="block" href="#"><i class="icon-lock"></i> Block</a></li>
+              <li><a class="spam" href="#"><i class="icon-signal"></i> Report as Spam</a></li>
+            </ul>
+          </li>
+          <% if (tweet.geo) { %>
+            <li>
+              <a class="geo" href="#"><i class="icon-globe icon-white"></i> Show Map</a></li>
+            </li>
+          <% } %>
+
+        </ul>
+
+      </div>
+    </div>
+  </div>
+  <div class="span4">
+    <p><%- tweet.text %></p>
+  </div>
+
+  <div class="span4 meta">
+    <p>
+      <% if (retweet) { %>
+        Retweeted by <a href="http://twitter/<%= retweet_by %>"><%= retweet_by %></a>
+      <% } else { %>
+        Posted by <a href="http://twitter/<%= tweet.user.screen_name %>"><%= tweet.user.screen_name %></a>
+      <% } %>
+      Posted <span class="timeago"><%= ago %></span> via <%- tweet.source %>
+      <% if (tweet.in_reply_to_screen_name) { %>
+        in reply to <a target="_new" href="http://twitter.com/<%= tweet.in_reply_to_screen_name %>"><%= tweet.in_reply_to_screen_name %></a>
+      <% } %>
+    </p>
+  </div>
+</div>
