@@ -6,6 +6,27 @@ module.exports = function(instance) {
 
     var self = this;
 
+    this.sendTweet = function(tweet, cb) {
+
+      self.session(function(err, session) {
+        if (err) {
+          return cb(err);
+        }
+        var user = instance.users[session.user.id + ':' + session.user.screen_name];
+        user.twitter.updateStatus(tweet.status, tweet, cb);
+      });
+    };
+
+    this.retweet = function(id, cb) {
+      self.session(function(err, session) {
+        if (err) {
+          return cb(err);
+        }
+        var user = instance.users[session.user.id + ':' + session.user.screen_name];
+        user.twitter.retweetStatus(id, cb);
+      });
+    };
+
     connection.on('ready', function() {
       self.session(function(err, session) {
         if (err) {

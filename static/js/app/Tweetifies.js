@@ -185,7 +185,7 @@ _.extend(Tweetifies, {
         }
 
         $('#tweet-text').attr('disabled', true);
-        Tweetifies.remote.app.sendTweet(to_send, function(err, tweet) {
+        Tweetifies.remote.sendTweet(to_send, function(err, tweet) {
           if (err) {
             console.error(err);
             $('#alerts')
@@ -413,7 +413,7 @@ _.extend(Tweetifies, {
       } else if (action_clicked === 'retweet') {
         var c = confirm('Retweet to your followers?');
         if (c) {
-          Tweetifies.remote.app.retweet(message.id_str, function(err, tweet) {
+          Tweetifies.remote.retweet(message.id_str, function(err, tweet) {
             if (err) {
               Tweetifies.incomingError(err);
             } else {
