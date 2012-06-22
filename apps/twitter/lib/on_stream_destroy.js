@@ -1,4 +1,4 @@
-module.exports = function(instance, user, client, connection) {
+module.exports = function(instance, user, remote) {
 
   return function(destroy) {
     console.log('============== destroy event ==============');

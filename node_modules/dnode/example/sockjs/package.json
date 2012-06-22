@@ -1,0 +1,12 @@
+{
+    "name" : "dnode-sockjs-example",
+    "version" : "0.0.0",
+    "dependencies" : {
+        "sockjs" : "git://github.com/substack/sockjs-node.git#browserify-npm",
+        "sockjs-client" : "git://github.com/substack/sockjs-client.git#browserify-npm",
+        "ecstatic" : "~0.1.6",
+        "domready" : "~0.2.11",
+        "browserify" : "~1.12.3"
+    },
+    "private" : true
+}

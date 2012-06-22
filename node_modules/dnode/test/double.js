@@ -15,7 +15,7 @@ test('double', function (t) {
         }
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             remote.z(
                 function (x,f) { f(x * 2) },

@@ -10,7 +10,7 @@ test('unix', function (t) {
     
     var server = dnode({ f : function (cb) { cb(1337) } }).listen(sfile);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(sfile, function (remote, conn) {
             remote.f(function (x) {
                 t.equal(x, 1337);

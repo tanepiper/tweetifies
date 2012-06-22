@@ -18,7 +18,7 @@ test('bidirectional', function (t) {
         }; 
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode({
             x : function (f) {
                 counts.x ++;

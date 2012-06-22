@@ -18,8 +18,8 @@ test('nested', function (t) {
     var moo = new EventEmitter;
     
     // Don't worry, real code does't look like this:
-    server1.on('ready', function () {
-        server2.on('ready', function () {
+    server1.on('listening', function () {
+        server2.on('listening', function () {
             dnode.connect(port, function (remote1, conn1) {
                 dnode.connect(port + 1, function (remote2, conn2) {
                     moo.on('hi', function (x) {

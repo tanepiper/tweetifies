@@ -29,7 +29,7 @@ test('emit events', function (t) {
         };
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         setTimeout(function () {
             var iv = setInterval(function () {
                 publish('data', Math.floor(Math.random() * 100));

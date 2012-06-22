@@ -1,4 +1,4 @@
-module.exports = function(instance, user, client, connection) {
+module.exports = function(instance, user, remote) {
 
   return function(data) {
     console.log('============== data event ==============');
@@ -25,9 +25,9 @@ module.exports = function(instance, user, client, connection) {
       // Finally we have a fucking tweet!
       require('./../processors/process_tweet')(data, function(err, output) {
         if (err) {
-          return client.onError(err);
+          return remote.onError(err);
         }
-        return client.onTweet(output);
+        return remote.onTweet(output);
       });
     }
   };

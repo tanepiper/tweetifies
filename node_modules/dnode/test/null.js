@@ -18,7 +18,7 @@ test('null', function (t) {
         },
     }).listen(port.toString()); // test for stringified ports too why not
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             t.ok(conn.id);
             t.equal(conn.stream.remoteAddress, '127.0.0.1');

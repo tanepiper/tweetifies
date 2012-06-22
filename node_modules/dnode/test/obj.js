@@ -11,7 +11,7 @@ test('object ref tests', function (t) {
         getObject : function (f) { f(obj) },
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             remote.getObject(function (rObj) {
                 t.equal(rObj.a, 1);

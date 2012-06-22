@@ -32,13 +32,13 @@ module.exports = (function() {
 
       instance.users = {};
 
-      require('./tweet_server')(instance);
-
      // Attach the express server for HTTP
       require('./express')(instance);
 
+      require('./sockjs_server')(instance);
+
       // Attach the DNode server for our functionality
-      require('./dnode_server')(instance);
+      //require('./dnode_server')(instance);
 
       return instance;
     }

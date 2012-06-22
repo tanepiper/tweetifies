@@ -7,7 +7,7 @@ test('_id', function (t) {
     
     var server = dnode({ _id : 1337 }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             t.equal(remote._id, 1337);
             conn.end();

@@ -17,7 +17,7 @@ test('circular refs', function (t) {
         },
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             var obj = { a : 1, b : 2 };
             obj.c = obj;

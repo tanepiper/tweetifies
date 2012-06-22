@@ -10,7 +10,7 @@ test('refs', function (t) {
         b : 2,
     }).listen(port);
     
-    server.on('ready', function () {
+    server.on('listening', function () {
         dnode.connect(port, function (remote, conn) {
             conn.end();
             server.close();
