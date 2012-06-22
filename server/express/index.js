@@ -33,6 +33,14 @@ module.exports = function(instance) {
     server.use(express.static(instance.options.express.static_dir));
   });
 
+  server.post('/auth', function(req, res, next) {
+    if (!req.session) return;
+
+    var token = Math.random().toString(16).slice(2);
+    instance.tokens[token] = req.session;
+
+    res.end(token);
+  });
 
   server.get('/login/twitter/return', require('./paths/get_login_twitter_return')(instance));
   server.get('/login/twitter', require('./paths/get_login_twitter')(instance));

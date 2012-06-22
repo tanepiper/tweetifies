@@ -4569,7 +4569,11 @@ var dnode = require('dnode');
 domready(function () {
     var stream = sockjs('/dnode');
 
-    var d = dnode();
+    var d = dnode({
+      foo: function() {
+
+      }
+    });
 
     d.on('local', function(local) {
       local.onError = function(e) {
@@ -4581,10 +4585,25 @@ domready(function () {
       };
     });
 
+    d.on('remote', function(remote) {
+      $.post('/auth', function(token) {
+
+        remote.auth(token, function(err, t) {
+          if (err) {
+            return console.log(err);
+          }
+          window.t = t;
+        });
+
+      });
+    });
+
+    /*
     d.on('remote', function (remote) {
        console.log(remote);
        window.remote = remote;
     });
+     */
 
     d.pipe(stream).pipe(d);
 });

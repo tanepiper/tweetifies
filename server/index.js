@@ -31,6 +31,8 @@ module.exports = (function() {
 
       instance.users = {};
 
+      instance.tokens = {};
+
      // Attach the express server for HTTP
       require('./express')(instance);
 
