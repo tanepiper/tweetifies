@@ -8,9 +8,18 @@ domready(function () {
     var d = dnode({
       foo: function() {
 
+      },
+      onError: function(err) {
+        console.log(e);
+      },
+      onTweet: function(tweet) {
+
       }
     });
 
+    d.pipe(stream).pipe(d);
+
+    /*
     d.on('local', function(local) {
       local.onError = function(e) {
         console.log(e);
@@ -20,6 +29,7 @@ domready(function () {
         console.log(t);
       };
     });
+     */
 
     d.on('remote', function(remote) {
       $.post('/auth', function(token) {
@@ -34,12 +44,5 @@ domready(function () {
       });
     });
 
-    /*
-    d.on('remote', function (remote) {
-       console.log(remote);
-       window.remote = remote;
-    });
-     */
 
-    d.pipe(stream).pipe(d);
 });

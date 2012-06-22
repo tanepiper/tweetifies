@@ -61,6 +61,12 @@ module.exports = function(instance) {
        */
     });
 
+    setTimeout(function() {
+      console.log(d);
+    }, 10000);
+
+
+
     d.pipe(stream).pipe(d);
 
   });
