@@ -34,8 +34,17 @@ module.exports = function(instance) {
           if (!user.twitter) {
             user.twitter = new twitter(req.session.oauth);
           }
-
         }
+
+        local.updateStatus = function(tweet, cb) {
+          user.twitter.updateStatus(tweet.status, tweet, cb);
+
+        };
+
+        local.retweet = function(id, cb) {
+          user.twitter.retweetStatus(id, cb);
+        };
+
       });
 
       d.on('remote', function(remote) {

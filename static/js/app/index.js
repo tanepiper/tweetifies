@@ -4583,6 +4583,7 @@ domready(function () {
 
     d.on('remote', function (remote) {
        console.log(remote);
+       window.remote = remote;
     });
 
     d.pipe(stream).pipe(d);

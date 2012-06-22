@@ -2,7 +2,6 @@
  * External requires
  */
 var _ = require('underscore');
-var pg = require('pg');
 
 /**
  * This module in our instance starting module, it allows us to return an instance
@@ -36,9 +35,6 @@ module.exports = (function() {
       require('./express')(instance);
 
       require('./sockjs_server')(instance);
-
-      // Attach the DNode server for our functionality
-      //require('./dnode_server')(instance);
 
       return instance;
     }
