@@ -1,8 +1,10 @@
-module.exports = function(instance, user, remote) {
+module.exports = function(instance, dnode) {
+
+  console.log(dnode);
 
   return function(data) {
     console.log('============== data event ==============');
-    console.log(data);
+    //console.log(data);
     console.log('============ end data event ============');
 
     if (data.friends) {
@@ -25,9 +27,9 @@ module.exports = function(instance, user, remote) {
       // Finally we have a fucking tweet!
       require('./../processors/process_tweet')(data, function(err, output) {
         if (err) {
-          return remote.onError(err);
+          return dnode.proto.remote.onError(err);
         }
-        return remote.onTweet(output);
+        return dnode.proto.remote.onTweet(output);
       });
     }
   };

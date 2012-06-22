@@ -2,7 +2,7 @@ module.exports = function(instance) {
 
   var sockjs = require('sockjs');
   var dnode = require('dnode');
-  var twitter = require('ntwitter');
+  var ntwitter = require('ntwitter');
 
   var sock = sockjs.createServer();
 
@@ -16,21 +16,34 @@ module.exports = function(instance) {
 
     var d = dnode({
       auth : function (token, cb) {
-        console.log(token, instance.tokens);
+
         u = instance.tokens[token];
+
         if (!u) return cb('Invalid Token');
 
-        var t = new twitter(u.oauth);
-        var l = {
+        var twitter = new ntwitter(u.oauth);
+        var authorised = {
           updateStatus: function(tweet, cb) {
-            t.updateStatus(tweet.status, tweet, cb);
+            twitter.updateStatus(tweet.status, tweet, cb);
           },
           retweetStatus: function(id, cb) {
-            t.retweetStatus(id, cb);
+            twitter.retweetStatus(id, cb);
           }
         };
 
-        cb(null, l);
+        twitter.verifyCredentials(function(err, profile) {
+          authorised.profile = profile;
+
+          twitter.stream('user', function(tstream) {
+            authorised.tstream = tstream;
+
+            tstream.on('data', require(instance.options.base + '/apps/twitter/lib/on_stream_data')(instance, d));
+            //tstream.on('error', require(instance.options.base + '/apps/twitter/lib/on_stream_error')(instance, d));
+            //tstream.on('destroy', require(instance.options.base + '/apps/twitter/lib/on_stream_destroy')(instance, d));
+
+            cb(null, authorised);
+          });
+        });
       }
     });
 
@@ -60,12 +73,6 @@ module.exports = function(instance) {
       }
        */
     });
-
-    setTimeout(function() {
-      console.log(d);
-    }, 10000);
-
-
 
     d.pipe(stream).pipe(d);
 
