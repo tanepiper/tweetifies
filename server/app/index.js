@@ -1,12 +1,11 @@
-var sockjs = require('sockjs');
+var shoe = require('shoe');
 
 module.exports = function(instance) {
 
-  var sock = sockjs.createServer();
+  var sock = shoe(require('./connection')(instance));
+  //sock.on('connection', require('./connection')(instance));
 
-  sock.on('connection', require('./connection')(instance));
-
-  sock.installHandlers(instance.express, { prefix : '/tweetifies' });
+  sock.install(instance.express, { prefix : '/tweetifies' });
 
   instance.sockjs = sock;
 };
