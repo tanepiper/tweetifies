@@ -18,7 +18,7 @@
 
       <% if (session.oauth) { %>
         <ul class="nav pull-right">
-          <li><a class="desktop-notifications off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
+          <li><a id="desktop-notifications" class="off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
           <li><a href="/logout">Logout</a></li>
         </ul>
       <% } %>
@@ -48,7 +48,7 @@
                     <li><a class="upload" >Upload Image</a></li>
                   </ul>
                   <ul class="nav pull-right">
-                    <li><a class="tweet" href="#">Tweet</a></li>
+                    <li><a id="send-tweet" href="#">Tweet</a></li>
                   </ul>
                 </div>
               </div>

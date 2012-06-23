@@ -36,7 +36,7 @@ module.exports = (function() {
      // Attach the express server for HTTP
       require('./express')(instance);
 
-      require('./sockjs_server')(instance);
+      require('./app')(instance);
 
       return instance;
     }

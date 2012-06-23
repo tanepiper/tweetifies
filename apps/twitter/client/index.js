@@ -47,14 +47,14 @@ domready(function () {
 
     d.on('remote', function(r) {
       $.post('/auth', function(token) {
-
+        console.log(token);
         r.auth(token, function(err, remote) {
           if (err) {
             return console.log(err);
           }
-          window.remote = remote;
+          console.log(remote);
+          Tweetifies.remote = remote;
         });
-
       });
     });
 
