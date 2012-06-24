@@ -2,6 +2,7 @@
  * External requires
  */
 var _ = require('underscore');
+var fs = require('fs');
 
 /**
  * This module in our instance starting module, it allows us to return an instance
@@ -28,6 +29,10 @@ module.exports = (function() {
           view_dir: __dirname
         }
       });
+
+      instance.templates = {
+        tweet: fs.readFileSync(instance.options.base + '/server/app/templates/tweet.html', 'utf8')
+      };
 
       instance.users = {};
 

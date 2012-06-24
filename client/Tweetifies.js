@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var shoe = require('shoe');
 var dnode = require('dnode');
+var page = require('page');
 
 window.Tweetifies = _.extend({}, {
 
@@ -30,6 +31,10 @@ window.Tweetifies = _.extend({}, {
       Tweetifies.queue.push(item);
       Tweetifies.updateQueueDisplay();
     }
+  },
+
+  onProfile: function(profile) {
+    Tweetifies.profile = profile;
   },
 
   updateQueueDisplay: function() {
@@ -153,6 +158,23 @@ window.Tweetifies = _.extend({}, {
     }
   },
 
+  onViewMentions: function(e) {
+    e.preventDefault();
+
+    $('#mentions-modal').modal('show');
+    $('#mentions-modal .modal-body').html('Loading Tweets');
+    Tweetifies.app.getMentions({}, function(err, tweets) {
+      if (err) {
+        return Tweetifies.onError(err);
+      }
+      $('#mentions-modal .modal-body').html('');
+      tweets.reverse().forEach(function(tweet) {
+        var item = new Tweetifies.Tweet(tweet);
+        item.render($('#mentions-modal .modal-body'));
+      });
+    });
+  },
+
   init: function() {
 
     $('#loading-modal').modal('show');
@@ -160,7 +182,8 @@ window.Tweetifies = _.extend({}, {
     Tweetifies.stream = shoe('/tweetifies');
     Tweetifies.dnode = dnode({
       onError: Tweetifies.onError,
-      onTweet: Tweetifies.onTweet
+      onTweet: Tweetifies.onTweet,
+      onProfile: Tweetifies.onProfile
     });
 
     Tweetifies.dnode.on('remote', function(remote) {
@@ -172,19 +195,14 @@ window.Tweetifies = _.extend({}, {
           }
           Tweetifies.app = app;
 
-          app.initial_tweets.forEach(function(tweet) {
-            Tweetifies.tweets[tweet.id] = tweet;
-            Tweetifies.onTweet(tweet, true);
-          });
-          Tweetifies.processQueue();
-
           $('#loading-modal').modal('hide');
-
           $('#load-tweets').on('click', Tweetifies.processQueue);
           $('#desktop-notifications').on('click', Tweetifies.desktopNotifications);
           $('#tweet-text').on('keyup', Tweetifies.onTweetTextEnter);
           $('.geocode').on('click', Tweetifies.onGeocode);
           $('#send-tweet').on('click', Tweetifies.onSendTweet);
+
+          $('#view-mentions').on('click', Tweetifies.onViewMentions);
 
 
           //setInterval(Tweetifies.onTimeUpdate, 10000);

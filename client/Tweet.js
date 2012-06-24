@@ -7,17 +7,23 @@ _.extend(Tweetifies, {
 
       el: $(this.tpl),
 
-      render: function() {
-        if (this.data.in_reply_to_screen_name === Tweetifies.app.profile.screen_name) {
+      render: function(el) {
+        if (!el && this.data.in_reply_to_screen_name === Tweetifies.profile.screen_name) {
           this.el.css({backgroundColor: '#D1F5D1'});
           Tweetifies.Notifier.Notify(this.data.user.profile_image_url, 'Tweet From @' + this.data.user.screen_name, this.data.text);
         }
 
-        $('#twitter-output').prepend(this.el);
+        if (!el) {
+          $('#twitter-output').prepend(this.el);
+        } else {
+          el.prepend(this.el);
+        }
+
         this.el.slideDown();
 
         $('.reply', this.el).on('click', this.onReply.bind(this));
         $('.retweet', this.el).on('click', this.onRetweet.bind(this));
+        $('.screen-name', this.el).on('click', this.onScreenname.bind(this));
       },
       onReply: function(e) {
         e.preventDefault();
@@ -30,7 +36,7 @@ _.extend(Tweetifies, {
         // Get the names of all the people involved
         if (this.data.entities.user_mentions && this.data.entities.user_mentions.length > 0) {
           this.data.entities.user_mentions.forEach(function(mention) {
-            if (mention.screen_name !== Tweetifies.app.profile.screen_name && output.indexOf('@' + mention.screen_name + ' ') === -1) {
+            if (mention.screen_name !== Tweetifies.profile.screen_name && output.indexOf('@' + mention.screen_name + ' ') === -1) {
               output.push('@' + mention.screen_name + ' ');
             }
           });
@@ -59,6 +65,32 @@ _.extend(Tweetifies, {
             }*/
           });
         }
+      },
+
+      onScreenname: function(e) {
+        e.preventDefault();
+
+        var user = this.data.user;
+
+        $('#user-modal .modal-header').html([
+          '<img style="float: left;" src="' + user.profile_image_url + '" />',
+          '<h3>@' + user.screen_name + '</h3>',
+          '<div style="clear: both;"></div>'
+        ].join(''));
+
+        $('#user-modal .modal-body').html('Loading Tweets');
+        $('#user-modal').modal('show');
+
+        Tweetifies.app.getUserTimeline({screen_name: user.screen_name}, function(err, tweets) {
+          if (err) {
+            return Tweetifies.onError(err);
+          }
+          $('#mentions-modal .modal-body').html('');
+          tweets.reverse().forEach(function(tweet) {
+            var item = new Tweetifies.Tweet(tweet);
+            item.render($('#user-modal .modal-body'));
+          });
+        });
       }
     });
   }

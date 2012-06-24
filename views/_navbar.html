@@ -7,7 +7,7 @@
       <ul class="nav">
         <% if (session.oauth) { %>
           <li><a href="/home">Tweets</a></li>
-          <li><a href="/mentions">Mentions</a></li>
+          <li><a id="view-mentions" href="/mentions">Mentions</a></li>
           <li><a href="/direct-messages">Direct Messages</a></li>
         <% } else { %>
           <li>

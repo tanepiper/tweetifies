@@ -1,4 +1,4 @@
-var require = function (file, cwd) {
+(function(){var require = function (file, cwd) {
     var resolved = require.resolve(file, cwd || '/');
     var mod = require.modules[resolved];
     if (!mod) throw new Error(
@@ -135,80 +135,48 @@ require.alias = function (from, to) {
     }
 };
 
-require.define = function (filename, fn) {
-    var dirname = require._core[filename]
-        ? ''
-        : require.modules.path().dirname(filename)
-    ;
+(function () {
+    var process = {};
     
-    var require_ = function (file) {
-        return require(file, dirname)
-    };
-    require_.resolve = function (name) {
-        return require.resolve(name, dirname);
-    };
-    require_.modules = require.modules;
-    require_.define = require.define;
-    var module_ = { exports : {} };
-    
-    require.modules[filename] = function () {
-        require.modules[filename]._cached = module_.exports;
-        fn.call(
-            module_.exports,
-            require_,
-            module_,
-            module_.exports,
-            dirname,
-            filename
-        );
-        require.modules[filename]._cached = module_.exports;
-        return module_.exports;
-    };
-};
-
-if (typeof process === 'undefined') process = {};
-
-if (!process.nextTick) process.nextTick = (function () {
-    var queue = [];
-    var canPost = typeof window !== 'undefined'
-        && window.postMessage && window.addEventListener
-    ;
-    
-    if (canPost) {
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'browserify-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-    }
-    
-    return function (fn) {
-        if (canPost) {
-            queue.push(fn);
-            window.postMessage('browserify-tick', '*');
+    require.define = function (filename, fn) {
+        if (require.modules.__browserify_process) {
+            process = require.modules.__browserify_process();
         }
-        else setTimeout(fn, 0);
+        
+        var dirname = require._core[filename]
+            ? ''
+            : require.modules.path().dirname(filename)
+        ;
+        
+        var require_ = function (file) {
+            return require(file, dirname)
+        };
+        require_.resolve = function (name) {
+            return require.resolve(name, dirname);
+        };
+        require_.modules = require.modules;
+        require_.define = require.define;
+        var module_ = { exports : {} };
+        
+        require.modules[filename] = function () {
+            require.modules[filename]._cached = module_.exports;
+            fn.call(
+                module_.exports,
+                require_,
+                module_,
+                module_.exports,
+                dirname,
+                filename,
+                process
+            );
+            require.modules[filename]._cached = module_.exports;
+            return module_.exports;
+        };
     };
 })();
 
-if (!process.title) process.title = 'browser';
 
-if (!process.binding) process.binding = function (name) {
-    if (name === 'evals') return require('vm')
-    else throw new Error('No such module')
-};
-
-if (!process.cwd) process.cwd = function () { return '.' };
-
-if (!process.env) process.env = {};
-if (!process.argv) process.argv = [];
-
-require.define("path", function (require, module, exports, __dirname, __filename) {
-function filter (xs, fn) {
+require.define("path",function(require,module,exports,__dirname,__filename,process){function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
         if (fn(xs[i], i, xs)) res.push(xs[i]);
@@ -342,15 +310,61 @@ exports.basename = function(path, ext) {
 exports.extname = function(path) {
   return splitPathRe.exec(path)[3] || '';
 };
-
 });
 
-require.define("/node_modules/underscore/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"underscore.js"}
+require.define("__browserify_process",function(require,module,exports,__dirname,__filename,process){var process = module.exports = {};
+
+process.nextTick = (function () {
+    var queue = [];
+    var canPost = typeof window !== 'undefined'
+        && window.postMessage && window.addEventListener
+    ;
+    
+    if (canPost) {
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'browserify-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+    }
+    
+    return function (fn) {
+        if (canPost) {
+            queue.push(fn);
+            window.postMessage('browserify-tick', '*');
+        }
+        else setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    if (name === 'evals') return (require)('vm')
+    else throw new Error('No such module. (Possibly not yet loaded)')
+};
+
+(function () {
+    var cwd = '/';
+    var path;
+    process.cwd = function () { return cwd };
+    process.chdir = function (dir) {
+        if (!path) path = require('path');
+        cwd = path.resolve(dir, cwd);
+    };
+})();
 });
 
-require.define("/node_modules/underscore/underscore.js", function (require, module, exports, __dirname, __filename) {
-//     Underscore.js 1.3.3
+require.define("/node_modules/underscore/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"underscore.js"}});
+
+require.define("/node_modules/underscore/underscore.js",function(require,module,exports,__dirname,__filename,process){//     Underscore.js 1.3.3
 //     (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore is freely distributable under the MIT license.
 //     Portions of Underscore are inspired or borrowed from Prototype,
@@ -1409,15 +1423,11 @@ require.define("/node_modules/underscore/underscore.js", function (require, modu
   };
 
 }).call(this);
-
 });
 
-require.define("/node_modules/shoe/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"index.js","browserify":"browser.js"}
-});
+require.define("/node_modules/shoe/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js","browserify":"browser.js"}});
 
-require.define("/node_modules/shoe/browser.js", function (require, module, exports, __dirname, __filename) {
-var Stream = require('stream');
+require.define("/node_modules/shoe/browser.js",function(require,module,exports,__dirname,__filename,process){var Stream = require('stream');
 var sockjs = require('sockjs-client');
 
 module.exports = function (uri, cb) {
@@ -1465,11 +1475,9 @@ module.exports = function (uri, cb) {
     
     return stream;
 };
-
 });
 
-require.define("stream", function (require, module, exports, __dirname, __filename) {
-var events = require('events');
+require.define("stream",function(require,module,exports,__dirname,__filename,process){var events = require('events');
 var util = require('util');
 
 function Stream() {
@@ -1588,11 +1596,9 @@ Stream.prototype.pipe = function(dest, options) {
   // Allow for unix-like usage: A.pipe(B).pipe(C)
   return dest;
 };
-
 });
 
-require.define("events", function (require, module, exports, __dirname, __filename) {
-if (!process.EventEmitter) process.EventEmitter = function () {};
+require.define("events",function(require,module,exports,__dirname,__filename,process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -1763,11 +1769,9 @@ EventEmitter.prototype.listeners = function(type) {
   }
   return this._events[type];
 };
-
 });
 
-require.define("util", function (require, module, exports, __dirname, __filename) {
-var events = require('events');
+require.define("util",function(require,module,exports,__dirname,__filename,process){var events = require('events');
 
 exports.print = function () {};
 exports.puts = function () {};
@@ -2079,15 +2083,11 @@ exports.inherits = function(ctor, superCtor) {
     }
   });
 };
-
 });
 
-require.define("/node_modules/shoe/node_modules/sockjs-client/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"sockjs.js"}
-});
+require.define("/node_modules/shoe/node_modules/sockjs-client/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"sockjs.js"}});
 
-require.define("/node_modules/shoe/node_modules/sockjs-client/sockjs.js", function (require, module, exports, __dirname, __filename) {
-/* SockJS client, version 0.3.1.7.ga67f.dirty, http://sockjs.org, MIT License
+require.define("/node_modules/shoe/node_modules/sockjs-client/sockjs.js",function(require,module,exports,__dirname,__filename,process){/* SockJS client, version 0.3.1.7.ga67f.dirty, http://sockjs.org, MIT License
 
 Copyright (c) 2011-2012 VMware, Inc.
 
@@ -4410,24 +4410,18 @@ if (typeof module === 'object' && module && module.exports) {
 
 // [*] End of lib/all.js
 
-
 });
 
-require.define("/node_modules/dnode/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"./index.js","browserify":"browser.js"}
-});
+require.define("/node_modules/dnode/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./index.js","browserify":"browser.js"}});
 
-require.define("/node_modules/dnode/browser.js", function (require, module, exports, __dirname, __filename) {
-var dnode = require('./lib/dnode');
+require.define("/node_modules/dnode/browser.js",function(require,module,exports,__dirname,__filename,process){var dnode = require('./lib/dnode');
 
 module.exports = function (cons, opts) {
     return new dnode(cons, opts);
 };
-
 });
 
-require.define("/node_modules/dnode/lib/dnode.js", function (require, module, exports, __dirname, __filename) {
-var protocol = require('dnode-protocol');
+require.define("/node_modules/dnode/lib/dnode.js",function(require,module,exports,__dirname,__filename,process){var protocol = require('dnode-protocol');
 var Stream = require('stream');
 var json = typeof JSON === 'object' ? JSON : require('jsonify');
 
@@ -4567,15 +4561,11 @@ dnode.prototype.end = function () {
 dnode.prototype.destroy = function () {
     this.end();
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"./index.js"}
-});
+require.define("/node_modules/dnode/node_modules/dnode-protocol/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"./index.js"}});
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/index.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter = require('events').EventEmitter;
+require.define("/node_modules/dnode/node_modules/dnode-protocol/index.js",function(require,module,exports,__dirname,__filename,process){var EventEmitter = require('events').EventEmitter;
 var scrubber = require('./lib/scrub');
 var objectKeys = require('./lib/keys');
 var forEach = require('./lib/foreach');
@@ -4700,11 +4690,9 @@ Proto.prototype.apply = function (f, args) {
     try { f.apply(undefined, args) }
     catch (err) { this.emit('error', err) }
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/scrub.js", function (require, module, exports, __dirname, __filename) {
-var traverse = require('traverse');
+require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/scrub.js",function(require,module,exports,__dirname,__filename,process){var traverse = require('traverse');
 var objectKeys = require('./keys');
 var forEach = require('./foreach');
 
@@ -4776,15 +4764,11 @@ Scrubber.prototype.unscrub = function (msg, f) {
     
     return args;
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/node_modules/traverse/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"index.js"}
-});
+require.define("/node_modules/dnode/node_modules/dnode-protocol/node_modules/traverse/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/node_modules/traverse/index.js", function (require, module, exports, __dirname, __filename) {
-var traverse = module.exports = function (obj) {
+require.define("/node_modules/dnode/node_modules/dnode-protocol/node_modules/traverse/index.js",function(require,module,exports,__dirname,__filename,process){var traverse = module.exports = function (obj) {
     return new Traverse(obj);
 };
 
@@ -5094,30 +5078,24 @@ forEach(objectKeys(Traverse.prototype), function (key) {
         return t[key].apply(t, args);
     };
 });
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/keys.js", function (require, module, exports, __dirname, __filename) {
-module.exports = Object.keys || function (obj) {
+require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/keys.js",function(require,module,exports,__dirname,__filename,process){module.exports = Object.keys || function (obj) {
     var keys = [];
     for (var key in obj) keys.push(key);
     return keys;
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/foreach.js", function (require, module, exports, __dirname, __filename) {
-module.exports = function forEach (xs, f) {
+require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/foreach.js",function(require,module,exports,__dirname,__filename,process){module.exports = function forEach (xs, f) {
     if (xs.forEach) return xs.forEach(f)
     for (var i = 0; i < xs.length; i++) {
         f.call(xs, xs[i], i);
     }
 }
-
 });
 
-require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/is_enum.js", function (require, module, exports, __dirname, __filename) {
-var objectKeys = require('./keys');
+require.define("/node_modules/dnode/node_modules/dnode-protocol/lib/is_enum.js",function(require,module,exports,__dirname,__filename,process){var objectKeys = require('./keys');
 
 module.exports = function (obj, key) {
     if (Object.prototype.propertyIsEnumerable) {
@@ -5129,21 +5107,15 @@ module.exports = function (obj, key) {
     }
     return false;
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/jsonify/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"index.js"}
-});
+require.define("/node_modules/dnode/node_modules/jsonify/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"index.js"}});
 
-require.define("/node_modules/dnode/node_modules/jsonify/index.js", function (require, module, exports, __dirname, __filename) {
-exports.parse = require('./lib/parse');
+require.define("/node_modules/dnode/node_modules/jsonify/index.js",function(require,module,exports,__dirname,__filename,process){exports.parse = require('./lib/parse');
 exports.stringify = require('./lib/stringify');
-
 });
 
-require.define("/node_modules/dnode/node_modules/jsonify/lib/parse.js", function (require, module, exports, __dirname, __filename) {
-var at, // The index of the current character
+require.define("/node_modules/dnode/node_modules/jsonify/lib/parse.js",function(require,module,exports,__dirname,__filename,process){var at, // The index of the current character
     ch, // The current character
     escapee = {
         '"':  '"',
@@ -5416,11 +5388,9 @@ module.exports = function (source, reviver) {
         return reviver.call(holder, key, value);
     }({'': result}, '')) : result;
 };
-
 });
 
-require.define("/node_modules/dnode/node_modules/jsonify/lib/stringify.js", function (require, module, exports, __dirname, __filename) {
-var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+require.define("/node_modules/dnode/node_modules/jsonify/lib/stringify.js",function(require,module,exports,__dirname,__filename,process){var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
     escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
     gap,
     indent,
@@ -5574,13 +5544,395 @@ module.exports = function (value, replacer, space) {
     // Return the result of stringifying the value.
     return str('', {'': value});
 };
-
 });
 
-require.define("/client/Tweetifies.js", function (require, module, exports, __dirname, __filename) {
-    var _ = require('underscore');
+require.define("/node_modules/page/package.json",function(require,module,exports,__dirname,__filename,process){module.exports = {"main":"build/page.js"}});
+
+require.define("/node_modules/page/build/page.js",function(require,module,exports,__dirname,__filename,process){
+;(function(){
+
+  /**
+   * Perform initial dispatch.
+   */
+
+  var dispatch = true;
+
+  /**
+   * Base path.
+   */
+
+  var base = '';
+
+  /**
+   * Running flag.
+   */
+
+  var running;
+
+  /**
+   * Register `path` with callback `fn()`,
+   * or route `path`, or `page.start()`.
+   *
+   *   page('/user/:id', load, user);
+   *   page('/user/' + user.id, { some: 'thing' });
+   *   page('/user/' + user.id);
+   *   page();
+   *
+   * @param {String} path
+   * @param {Function} fn...
+   * @api public
+   */
+
+  function page(path, fn) {
+    // route <path> to <callback ...>
+    if ('function' == typeof fn) {
+      var route = new Route(path);
+      for (var i = 1; i < arguments.length; ++i) {
+        page.callbacks.push(route.middleware(arguments[i]));
+      }
+    // show <path> with [state]
+    } else if ('string' == typeof path) {
+      page.show(path, fn);
+    // start [options]
+    } else {
+      page.start(path);
+    }
+  }
+
+  /**
+   * Callback functions.
+   */
+
+  page.callbacks = [];
+
+  /**
+   * Get or set basepath to `path`.
+   *
+   * @param {String} path
+   * @api public
+   */
+
+  page.base = function(path){
+    if (0 == arguments.length) return base;
+    base = path;
+  };
+
+  /**
+   * Bind with the given `options`.
+   *
+   * Options:
+   *
+   *    - `click` bind to click events [true]
+   *    - `popstate` bind to popstate [true]
+   *    - `dispatch` perform initial dispatch [true]
+   *
+   * @param {Object} options
+   * @api public
+   */
+
+  page.start = function(options){
+    options = options || {};
+    if (running) return;
+    running = true;
+    if (false === options.dispatch) dispatch = false;
+    if (false !== options.popstate) addEventListener('popstate', onpopstate, false);
+    if (false !== options.click) addEventListener('click', onclick, false);
+    if (!dispatch) return;
+    page.replace(location.pathname, null, true, dispatch);
+  };
+
+  /**
+   * Unbind click and popstate event handlers.
+   *
+   * @api public
+   */
+
+  page.stop = function(){
+    running = false;
+    removeEventListener('click', onclick, false);
+    removeEventListener('popstate', onpopstate, false);
+  };
+
+  /**
+   * Show `path` with optional `state` object.
+   *
+   * @param {String} path
+   * @param {Object} state
+   * @return {Context}
+   * @api public
+   */
+
+  page.show = function(path, state){
+    var ctx = new Context(path, state);
+    page.dispatch(ctx);
+    if (!ctx.unhandled) ctx.pushState();
+    return ctx;
+  };
+
+  /**
+   * Replace `path` with optional `state` object.
+   *
+   * @param {String} path
+   * @param {Object} state
+   * @return {Context}
+   * @api public
+   */
+
+  page.replace = function(path, state, init, dispatch){
+    var ctx = new Context(path, state);
+    ctx.init = init;
+    if (null == dispatch) dispatch = true;
+    if (dispatch) page.dispatch(ctx);
+    ctx.save();
+    return ctx;
+  };
+
+  /**
+   * Dispatch the given `ctx`.
+   *
+   * @param {Object} ctx
+   * @api private
+   */
+
+  page.dispatch = function(ctx){
+    var i = 0;
+
+    function next() {
+      var fn = page.callbacks[i++];
+      if (!fn) return unhandled(ctx);
+      fn(ctx, next);
+    }
+
+    next();
+  };
+
+  /**
+   * Unhandled `ctx`. When it's not the initial
+   * popstate then redirect. If you wish to handle
+   * 404s on your own use `page('*', callback)`.
+   *
+   * @param {Context} ctx
+   * @api private
+   */
+
+  function unhandled(ctx) {
+    if (window.location.pathname == ctx.canonicalPath) return;
+    page.stop();
+    ctx.unhandled = true;
+    window.location = ctx.canonicalPath;
+  }
+
+  /**
+   * Initialize a new "request" `Context`
+   * with the given `path` and optional initial `state`.
+   *
+   * @param {String} path
+   * @param {Object} state
+   * @api public
+   */
+
+  function Context(path, state) {
+    if ('/' == path[0] && 0 != path.indexOf(base)) path = base + path;
+    this.canonicalPath = path;
+    this.path = path.replace(base, '') || '/';
+    this.title = document.title;
+    this.state = state || {};
+    this.state.path = path;
+    this.params = [];
+  }
+
+  /**
+   * Push state.
+   *
+   * @api private
+   */
+
+  Context.prototype.pushState = function(){
+    history.pushState(this.state, this.title, this.canonicalPath);
+  };
+
+  /**
+   * Save the context state.
+   *
+   * @api public
+   */
+
+  Context.prototype.save = function(){
+    history.replaceState(this.state, this.title, this.canonicalPath);
+  };
+
+  /**
+   * Initialize `Route` with the given HTTP `path`,
+   * and an array of `callbacks` and `options`.
+   *
+   * Options:
+   *
+   *   - `sensitive`    enable case-sensitive routes
+   *   - `strict`       enable strict matching for trailing slashes
+   *
+   * @param {String} path
+   * @param {Object} options.
+   * @api private
+   */
+
+  function Route(path, options) {
+    options = options || {};
+    this.path = path;
+    this.method = 'GET';
+    this.regexp = pathtoRegexp(path
+      , this.keys = []
+      , options.sensitive
+      , options.strict);
+  }
+
+  /**
+   * Return route middleware with
+   * the given callback `fn()`.
+   *
+   * @param {Function} fn
+   * @return {Function}
+   * @api public
+   */
+
+  Route.prototype.middleware = function(fn){
+    var self = this;
+    return function(ctx, next){
+      if (self.match(ctx.path, ctx.params)) return fn(ctx, next);
+      next();
+    }
+  };
+
+  /**
+   * Check if this route matches `path`, if so
+   * populate `params`.
+   *
+   * @param {String} path
+   * @param {Array} params
+   * @return {Boolean}
+   * @api private
+   */
+
+  Route.prototype.match = function(path, params){
+    var keys = this.keys
+      , m = this.regexp.exec(path);
+
+    if (!m) return false;
+
+    for (var i = 1, len = m.length; i < len; ++i) {
+      var key = keys[i - 1];
+
+      var val = 'string' == typeof m[i]
+        ? decodeURIComponent(m[i])
+        : m[i];
+
+      if (key) {
+        params[key.name] = undefined !== params[key.name]
+          ? params[key.name]
+          : val;
+      } else {
+        params.push(val);
+      }
+    }
+
+    return true;
+  };
+
+  /**
+   * Normalize the given path string,
+   * returning a regular expression.
+   *
+   * An empty array should be passed,
+   * which will contain the placeholder
+   * key names. For example "/user/:id" will
+   * then contain ["id"].
+   *
+   * @param  {String|RegExp|Array} path
+   * @param  {Array} keys
+   * @param  {Boolean} sensitive
+   * @param  {Boolean} strict
+   * @return {RegExp}
+   * @api private
+   */
+
+  function pathtoRegexp(path, keys, sensitive, strict) {
+    if (path instanceof RegExp) return path;
+    if (path instanceof Array) path = '(' + path.join('|') + ')';
+    path = path
+      .concat(strict ? '' : '/?')
+      .replace(/\/\(/g, '(?:/')
+      .replace(/\+/g, '__plus__')
+      .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, function(_, slash, format, key, capture, optional){
+        keys.push({ name: key, optional: !! optional });
+        slash = slash || '';
+        return ''
+          + (optional ? '' : slash)
+          + '(?:'
+          + (optional ? slash : '')
+          + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
+          + (optional || '');
+      })
+      .replace(/([\/.])/g, '\\$1')
+      .replace(/__plus__/g, '(.+)')
+      .replace(/\*/g, '(.*)');
+    return new RegExp('^' + path + '$', sensitive ? '' : 'i');
+  };
+
+  /**
+   * Handle "populate" events.
+   */
+
+  function onpopstate(e) {
+    if (e.state) {
+      var path = e.state.path;
+      page.replace(path, e.state);
+    }
+  }
+
+  /**
+   * Handle "click" events.
+   */
+
+  function onclick(e) {
+    var el = e.target;
+    while (el && 'A' != el.nodeName) el = el.parentNode;
+    if (!el || 'A' != el.nodeName) return;
+    var href = el.href;
+    var path = el.pathname;
+    if (el.hash) return;
+    if (!sameOrigin(href)) return;
+    var orig = path;
+    path = path.replace(base, '');
+    if (base && orig == path) return;
+    e.preventDefault();
+    page.show(orig);
+  }
+
+  /**
+   * Check if `href` is the same origin.
+   */
+
+  function sameOrigin(href) {
+    var origin = location.protocol + '//' + location.hostname;
+    if (location.port) origin += ':' + location.port;
+    return 0 == href.indexOf(origin);
+  }
+
+  /**
+   * Expose `page`.
+   */
+
+  if ('undefined' == typeof module) {
+    window.page = page;
+  } else {
+    module.exports = page;
+  }
+
+})();});
+
+require.define("/client/Tweetifies.js",function(require,module,exports,__dirname,__filename,process){var _ = require('underscore');
 var shoe = require('shoe');
 var dnode = require('dnode');
+var page = require('page');
 
 window.Tweetifies = _.extend({}, {
 
@@ -5610,6 +5962,10 @@ window.Tweetifies = _.extend({}, {
       Tweetifies.queue.push(item);
       Tweetifies.updateQueueDisplay();
     }
+  },
+
+  onProfile: function(profile) {
+    Tweetifies.profile = profile;
   },
 
   updateQueueDisplay: function() {
@@ -5733,6 +6089,23 @@ window.Tweetifies = _.extend({}, {
     }
   },
 
+  onViewMentions: function(e) {
+    e.preventDefault();
+
+    $('#mentions-modal').modal('show');
+    $('#mentions-modal .modal-body').html('Loading Tweets');
+    Tweetifies.app.getMentions({}, function(err, tweets) {
+      if (err) {
+        return Tweetifies.onError(err);
+      }
+      $('#mentions-modal .modal-body').html('');
+      tweets.reverse().forEach(function(tweet) {
+        var item = new Tweetifies.Tweet(tweet);
+        item.render($('#mentions-modal .modal-body'));
+      });
+    });
+  },
+
   init: function() {
 
     $('#loading-modal').modal('show');
@@ -5740,7 +6113,8 @@ window.Tweetifies = _.extend({}, {
     Tweetifies.stream = shoe('/tweetifies');
     Tweetifies.dnode = dnode({
       onError: Tweetifies.onError,
-      onTweet: Tweetifies.onTweet
+      onTweet: Tweetifies.onTweet,
+      onProfile: Tweetifies.onProfile
     });
 
     Tweetifies.dnode.on('remote', function(remote) {
@@ -5752,19 +6126,14 @@ window.Tweetifies = _.extend({}, {
           }
           Tweetifies.app = app;
 
-          app.initial_tweets.forEach(function(tweet) {
-            Tweetifies.tweets[tweet.id] = tweet;
-            Tweetifies.onTweet(tweet, true);
-          });
-          Tweetifies.processQueue();
-
           $('#loading-modal').modal('hide');
-
           $('#load-tweets').on('click', Tweetifies.processQueue);
           $('#desktop-notifications').on('click', Tweetifies.desktopNotifications);
           $('#tweet-text').on('keyup', Tweetifies.onTweetTextEnter);
           $('.geocode').on('click', Tweetifies.onGeocode);
           $('#send-tweet').on('click', Tweetifies.onSendTweet);
+
+          $('#view-mentions').on('click', Tweetifies.onViewMentions);
 
 
           //setInterval(Tweetifies.onTimeUpdate, 10000);
@@ -5775,12 +6144,10 @@ window.Tweetifies = _.extend({}, {
     Tweetifies.dnode.pipe(Tweetifies.stream).pipe(Tweetifies.dnode);
   }
 
-});
-});
+});});
 require("/client/Tweetifies.js");
 
-require.define("/client/Tweet.js", function (require, module, exports, __dirname, __filename) {
-    var _ = require('underscore');
+require.define("/client/Tweet.js",function(require,module,exports,__dirname,__filename,process){var _ = require('underscore');
 
 _.extend(Tweetifies, {
   Tweet: function(tweet) {
@@ -5789,17 +6156,23 @@ _.extend(Tweetifies, {
 
       el: $(this.tpl),
 
-      render: function() {
-        if (this.data.in_reply_to_screen_name === Tweetifies.app.profile.screen_name) {
+      render: function(el) {
+        if (!el && this.data.in_reply_to_screen_name === Tweetifies.profile.screen_name) {
           this.el.css({backgroundColor: '#D1F5D1'});
           Tweetifies.Notifier.Notify(this.data.user.profile_image_url, 'Tweet From @' + this.data.user.screen_name, this.data.text);
         }
 
-        $('#twitter-output').prepend(this.el);
+        if (!el) {
+          $('#twitter-output').prepend(this.el);
+        } else {
+          el.prepend(this.el);
+        }
+
         this.el.slideDown();
 
         $('.reply', this.el).on('click', this.onReply.bind(this));
         $('.retweet', this.el).on('click', this.onRetweet.bind(this));
+        $('.screen-name', this.el).on('click', this.onScreenname.bind(this));
       },
       onReply: function(e) {
         e.preventDefault();
@@ -5812,7 +6185,7 @@ _.extend(Tweetifies, {
         // Get the names of all the people involved
         if (this.data.entities.user_mentions && this.data.entities.user_mentions.length > 0) {
           this.data.entities.user_mentions.forEach(function(mention) {
-            if (mention.screen_name !== Tweetifies.app.profile.screen_name && output.indexOf('@' + mention.screen_name + ' ') === -1) {
+            if (mention.screen_name !== Tweetifies.profile.screen_name && output.indexOf('@' + mention.screen_name + ' ') === -1) {
               output.push('@' + mention.screen_name + ' ');
             }
           });
@@ -5841,15 +6214,39 @@ _.extend(Tweetifies, {
             }*/
           });
         }
+      },
+
+      onScreenname: function(e) {
+        e.preventDefault();
+
+        var user = this.data.user;
+
+        $('#user-modal .modal-header').html([
+          '<img style="float: left;" src="' + user.profile_image_url + '" />',
+          '<h3>@' + user.screen_name + '</h3>',
+          '<div style="clear: both;"></div>'
+        ].join(''));
+
+        $('#user-modal .modal-body').html('Loading Tweets');
+        $('#user-modal').modal('show');
+
+        Tweetifies.app.getUserTimeline({screen_name: user.screen_name}, function(err, tweets) {
+          if (err) {
+            return Tweetifies.onError(err);
+          }
+          $('#mentions-modal .modal-body').html('');
+          tweets.reverse().forEach(function(tweet) {
+            var item = new Tweetifies.Tweet(tweet);
+            item.render($('#user-modal .modal-body'));
+          });
+        });
       }
     });
   }
-});
-});
+});});
 require("/client/Tweet.js");
 
-require.define("/client/Notifier.js", function (require, module, exports, __dirname, __filename) {
-    var _ = require('underscore');
+require.define("/client/Notifier.js",function(require,module,exports,__dirname,__filename,process){var _ = require('underscore');
 $(function() {
   function Notifier() {}
 
@@ -5887,12 +6284,10 @@ $(function() {
   _.extend(Tweetifies, {Notifier: new Notifier()});
 
 });
-
 });
 require("/client/Notifier.js");
 
-require.define("/client/TweetStream.js", function (require, module, exports, __dirname, __filename) {
-    var stream = require('stream');
+require.define("/client/TweetStream.js",function(require,module,exports,__dirname,__filename,process){var stream = require('stream');
 var _ = require('underscore');
 var util = require('util');
 
@@ -5919,6 +6314,6 @@ _.extend(Tweetifies, {
   }
 });
 
-
 });
 require("/client/TweetStream.js");
+})();

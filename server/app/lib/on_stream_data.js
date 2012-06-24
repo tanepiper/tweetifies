@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 module.exports = function(instance, dnode) {
 
   return function(data) {
@@ -23,13 +25,17 @@ module.exports = function(instance, dnode) {
 
     } else {
       // Finally we have a fucking tweet!
-      var process_tweet = require('./../processors/incoming_tweet')(instance);
-      process_tweet(data, function(err, output) {
-        if (err) {
-          return dnode.proto.remote.onError(err);
-        }
-        return dnode.proto.remote.onTweet(output);
+      var process_tweet = require('./../processors/tweet')(instance);
+
+      process_tweet.on('data', function(data) {
+        dnode.proto.remote.onTweet(data, false);
       });
+
+      process_tweet.on('error', function(error) {
+        dnode.proto.remote.onError(err);
+      });
+
+      process_tweet.write(data);
     }
   };
 };
