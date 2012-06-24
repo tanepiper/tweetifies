@@ -2,6 +2,7 @@ var ntwitter = require('ntwitter');
 var _ = require('underscore');
 var async = require('async');
 var fs = require('fs');
+var request = require('request');
 
 module.exports = function(instance, stream, dnode) {
 
@@ -37,7 +38,7 @@ module.exports = function(instance, stream, dnode) {
             dnode.proto.remote.onError(error);
           });
 
-          tweets.forEach(function(tweet) {
+          tweets.reverse().forEach(function(tweet) {
             process_tweet.write(tweet);
           });
 
@@ -48,13 +49,48 @@ module.exports = function(instance, stream, dnode) {
             retweetStatus: function(id, cb) {
               twitter.retweetStatus(id, cb);
             },
-            search: function(terms, options, cb) {
-               _.defaults(options, {
+
+            search: function(query, cb) {
+
+              var qs = _.extend({}, {
+                q: query,
                 include_entities: true
               });
 
-              twitter.search(terms, options, cb);
+              request({
+                uri: 'http://search.twitter.com/search.json',
+                qs: qs,
+                json: true
+              }, function(err, res, body){
+                if (err) {
+                  return cb(err);
+                }
+
+                var process_tweet = require('./processors/tweet')(instance);
+
+                var new_tweets = [];
+
+                function done() {
+                  cb(null, new_tweets);
+                }
+
+                process_tweet.on('data', function(data) {
+                  new_tweets.push(data);
+                });
+
+                process_tweet.on('error', function(error) {
+                  cb(error);
+                });
+
+                body.results.forEach(function(tweet) {
+                  process_tweet.write(tweet);
+                });
+                done();
+
+              });
             },
+
+
             getMentions: function(options, cb) {
 
               var process_tweet = require('./processors/tweet')(instance);
@@ -123,6 +159,10 @@ module.exports = function(instance, stream, dnode) {
                 });
                 done();
               });
+            },
+
+            showUser: function(id, cb) {
+              twitter.showUser(id, cb);
             }
           };
 

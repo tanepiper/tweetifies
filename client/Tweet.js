@@ -23,7 +23,12 @@ _.extend(Tweetifies, {
 
         $('.reply', this.el).on('click', this.onReply.bind(this));
         $('.retweet', this.el).on('click', this.onRetweet.bind(this));
+        // This loads the current user
         $('.screen-name', this.el).on('click', this.onScreenname.bind(this));
+
+        // This loads another users profile, we don't need to bind this tweet
+        $('.user-profile', this.el).on('click', this.onUserProfile);
+        $('.hash-tag', this.el).on('click', this.onHashTag);
       },
       onReply: function(e) {
         e.preventDefault();
@@ -75,6 +80,7 @@ _.extend(Tweetifies, {
         $('#user-modal .modal-header').html([
           '<img style="float: left;" src="' + user.profile_image_url + '" />',
           '<h3>@' + user.screen_name + '</h3>',
+          '<p>' + user.description + '</p>',
           '<div style="clear: both;"></div>'
         ].join(''));
 
@@ -89,6 +95,65 @@ _.extend(Tweetifies, {
           tweets.reverse().forEach(function(tweet) {
             var item = new Tweetifies.Tweet(tweet);
             item.render($('#user-modal .modal-body'));
+          });
+        });
+      },
+
+      onUserProfile: function(e) {
+        e.preventDefault();
+        var id = $(this).attr('rel');
+
+        $('#user-modal .modal-header').html('<h3>Loading Profile</h3>');
+        $('#user-modal .modal-body').html('Loading Tweets');
+        $('#user-modal').modal('show');
+
+        Tweetifies.app.showUser(id, function(err, data) {
+          if (err) {
+            return Tweetifies.onError(err);
+          }
+          var user = data[0];
+          $('#user-modal .modal-header').html([
+            '<img style="float: left;" src="' + user.profile_image_url + '" />',
+            '<h3>@' + user.screen_name + '</h3>',
+            '<p>' + user.description + '</p>',
+            '<div style="clear: both;"></div>'
+          ].join(''));
+
+          $('#user-modal .modal-body').html('Loading Tweets');
+          $('#user-modal').modal('show');
+
+          Tweetifies.app.getUserTimeline({screen_name: user.screen_name}, function(err, tweets) {
+            if (err) {
+              return Tweetifies.onError(err);
+            }
+            $('#mentions-modal .modal-body').html('');
+            tweets.reverse().forEach(function(tweet) {
+              var item = new Tweetifies.Tweet(tweet);
+              item.render($('#user-modal .modal-body'));
+            });
+          });
+        });
+      },
+
+      onHashTag: function(e) {
+        e.preventDefault();
+
+        var search_value = $(this).text();
+
+        $('#search-modal .modal-header').html('<h3>Search: ' + search_value + '</h3>');
+
+        $('#search-modal .modal-body').html('Loading Tweets');
+        $('#search-modal').modal('show');
+
+        Tweetifies.app.search(search_value, function(err, tweets) {
+          if (err) {
+            return Tweetifies.onError(err);
+          }
+
+          $('#search-modal .modal-body').html('');
+          tweets.reverse().forEach(function(tweet) {
+            var item = new Tweetifies.Tweet(tweet);
+            item.render($('#search-modal .modal-body'));
           });
         });
       }

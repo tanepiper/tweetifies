@@ -26,6 +26,14 @@ module.exports = function(instance) {
         tweet: _.clone(data.retweeted_status),
         ago: moment(data.retweeted_status.created_at).from()
       });
+    } else if (!data.user) {
+      _.extend(output_object, {
+        retweet: false,
+        tweet: _.clone(data),
+        ago: moment(data.created_at).from()
+      });
+      output_object.tweet.user = data;
+      output_object.tweet.user.screen_name = data.from_user;
     } else {
       _.extend(output_object, {
         retweet: false,
@@ -35,20 +43,20 @@ module.exports = function(instance) {
     }
 
     // Mentions and hash tags we can just replace
-    output_object.tweet.text = output_object.tweet.text.replace(/\B@([\w-]+)/gmi, '<a target="_blank" title="@$1" href="http://twitter.com/$1">@$1</a>');
-    output_object.tweet.text = output_object.tweet.text.replace(/\B#([\w-]+)/gmi, '<a target="_blank" title="#$1" href="http://twitter.com/search/' + encodeURIComponent('#') + '$1">#$1</a>');
+    output_object.tweet.text = output_object.tweet.text.replace(/\B@([\w-]+)/gmi, '<a class="user-profile" rel="$1" target="_blank" title="@$1" href="http://twitter.com/$1">@$1</a>');
+    output_object.tweet.text = output_object.tweet.text.replace(/\B#([\w-]+)/gmi, '<a class="hash-tag" target="_blank" title="#$1" href="http://twitter.com/search/' + encodeURIComponent('#') + '$1">#$1</a>');
 
     // For urls and media we'll use the data from these to output
-    if (data.entities && data.entities.urls && data.entities.urls.length > 0) {
-      data.entities.urls.forEach(function(url) {
+    if (output_object.tweet.entities && output_object.tweet.entities.urls && output_object.tweet.entities.urls.length > 0) {
+      output_object.tweet.entities.urls.forEach(function(url) {
         var display = (url.display_url) ? url.display_url : url.url;
         var link = (url.expanded_url) ? url.expanded_url : url.url;
         output_object.tweet.text = output_object.tweet.text.replace(url.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gmi');
       });
     }
 
-    if (data.entities && data.entities.media && data.entities.media.length > 0) {
-      data.entities.media.forEach(function(media) {
+    if (output_object.tweet.entities && output_object.tweet.entities.media && output_object.tweet.entities.media.length > 0) {
+      output_object.tweet.entities.media.forEach(function(media) {
         var display = (media.display_url) ? media.display_url : media.url;
         var link = (media.expanded_url) ? media.expanded_url : media.url;
 

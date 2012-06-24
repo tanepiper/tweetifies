@@ -14,13 +14,13 @@
               <li><a class="reply" href="#"><i class="icon-hand-left"></i> Reply</a></li>
               <li><a class="retweet" href="#"><i class="icon-refresh"></i> Retweet</a></li>
               <li><a class="favourite" href="#"><i class="icon-heart"></i> Favourite</a></li>
-              <li><a class="delete disabled" disabled="disabled" href="#"><i class="icon-trash"></i> Delete</a></li>
+              <!--<li><a class="delete disabled" disabled="disabled" href="#"><i class="icon-trash"></i> Delete</a></li>
               <li class="divider"></li>
               <li class="nav-header">User</li>
               <li><a class="user-profile" href="#"><i class="icon-user"></i> View Profile</a></li>
               <li><a class="direct-message" href="#"><i class="icon-envelope"></i> Direct Message</a></li>
               <li><a class="block" href="#"><i class="icon-lock"></i> Block</a></li>
-              <li><a class="spam" href="#"><i class="icon-signal"></i> Report as Spam</a></li>
+              <li><a class="spam" href="#"><i class="icon-signal"></i> Report as Spam</a></li>-->
             </ul>
           </li>
           <% if (tweet.geo) { %>
@@ -41,9 +41,9 @@
   <div class="span4 meta">
     <p>
       <% if (retweet) { %>
-        Retweeted by <a href="http://twitter/<%= retweet_by %>"><%= retweet_by %></a>
+        Retweeted by <a class="user-profile" rel="<%= retweet_by %>" target="_blank" title="@<%= retweet_by %>" href="http://twitter.com/<%= retweet_by %>"><%= retweet_by %></a>
       <% } else { %>
-        Posted by <a href="http://twitter/<%= tweet.user.screen_name %>"><%= tweet.user.screen_name %></a>
+        Posted by <a class="user-profile" rel="<%= tweet.user.screen_name %>" target="_blank" title="@<%= tweet.user.screen_name %>" href="http://twitter.com/<%= tweet.user.screen_name %>"><%= tweet.user.screen_name %></a>
       <% } %>
       Posted <span class="timeago"><%= ago %></span> via <%- tweet.source %>
       <% if (tweet.in_reply_to_screen_name) { %>
