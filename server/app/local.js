@@ -19,7 +19,7 @@ module.exports = function(instance, stream, dnode) {
           return cb(err);
         }
 
-        twitter.getHomeTimeline({count: 150, include_entities: true}, function(err, tweets) {
+        twitter.getHomeTimeline({count: 40, include_entities: true}, function(err, tweets) {
           if (err) {
             return cb(err);
           }
