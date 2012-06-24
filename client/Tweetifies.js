@@ -1,5 +1,5 @@
 var _ = require('underscore');
-var sockjs = require('sockjs');
+var shoe = require('shoe');
 var dnode = require('dnode');
 
 window.Tweetifies = _.extend({}, {
@@ -63,7 +63,7 @@ window.Tweetifies = _.extend({}, {
       if (can) {
         $(this).removeClass('off').addClass('on');
         $('i', this).removeClass('icon-remove-sign').addClass('icon-ok-sign');
-        Tweetifies.Notifier.Notify('', 'Tweetifies', 'Desktop Notifications switched on');
+        Tweetifies.Notifier.Notify('/img/tweetifies-logo.png', 'Tweetifies', 'Desktop Notifications switched on');
       }
     });
   },
@@ -157,7 +157,7 @@ window.Tweetifies = _.extend({}, {
 
     $('#loading-modal').modal('show');
 
-    Tweetifies.stream = sockjs('/tweetifies');
+    Tweetifies.stream = shoe('/tweetifies');
     Tweetifies.dnode = dnode({
       onError: Tweetifies.onError,
       onTweet: Tweetifies.onTweet

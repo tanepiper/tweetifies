@@ -1412,11 +1412,11 @@ require.define("/node_modules/underscore/underscore.js", function (require, modu
 
 });
 
-require.define("/node_modules/sockjs/package.json", function (require, module, exports, __dirname, __filename) {
-module.exports = {"main":"index","browserify":"browser.js"}
+require.define("/node_modules/shoe/package.json", function (require, module, exports, __dirname, __filename) {
+module.exports = {"main":"index.js","browserify":"browser.js"}
 });
 
-require.define("/node_modules/sockjs/browser.js", function (require, module, exports, __dirname, __filename) {
+require.define("/node_modules/shoe/browser.js", function (require, module, exports, __dirname, __filename) {
 var Stream = require('stream');
 var sockjs = require('sockjs-client');
 
@@ -2082,11 +2082,11 @@ exports.inherits = function(ctor, superCtor) {
 
 });
 
-require.define("/node_modules/sockjs-client/package.json", function (require, module, exports, __dirname, __filename) {
+require.define("/node_modules/shoe/node_modules/sockjs-client/package.json", function (require, module, exports, __dirname, __filename) {
 module.exports = {"main":"sockjs.js"}
 });
 
-require.define("/node_modules/sockjs-client/sockjs.js", function (require, module, exports, __dirname, __filename) {
+require.define("/node_modules/shoe/node_modules/sockjs-client/sockjs.js", function (require, module, exports, __dirname, __filename) {
 /* SockJS client, version 0.3.1.7.ga67f.dirty, http://sockjs.org, MIT License
 
 Copyright (c) 2011-2012 VMware, Inc.
@@ -5579,7 +5579,7 @@ module.exports = function (value, replacer, space) {
 
 require.define("/client/Tweetifies.js", function (require, module, exports, __dirname, __filename) {
     var _ = require('underscore');
-var sockjs = require('sockjs');
+var shoe = require('shoe');
 var dnode = require('dnode');
 
 window.Tweetifies = _.extend({}, {
@@ -5643,7 +5643,7 @@ window.Tweetifies = _.extend({}, {
       if (can) {
         $(this).removeClass('off').addClass('on');
         $('i', this).removeClass('icon-remove-sign').addClass('icon-ok-sign');
-        Tweetifies.Notifier.Notify('', 'Tweetifies', 'Desktop Notifications switched on');
+        Tweetifies.Notifier.Notify('/img/tweetifies-logo.png', 'Tweetifies', 'Desktop Notifications switched on');
       }
     });
   },
@@ -5737,7 +5737,7 @@ window.Tweetifies = _.extend({}, {
 
     $('#loading-modal').modal('show');
 
-    Tweetifies.stream = sockjs('/tweetifies');
+    Tweetifies.stream = shoe('/tweetifies');
     Tweetifies.dnode = dnode({
       onError: Tweetifies.onError,
       onTweet: Tweetifies.onTweet
@@ -5792,6 +5792,7 @@ _.extend(Tweetifies, {
       render: function() {
         if (this.data.in_reply_to_screen_name === Tweetifies.app.profile.screen_name) {
           this.el.css({backgroundColor: '#D1F5D1'});
+          Tweetifies.Notifier.Notify(this.data.user.profile_image_url, 'Tweet From @' + this.data.user.screen_name, this.data.text);
         }
 
         $('#twitter-output').prepend(this.el);
@@ -5889,3 +5890,35 @@ $(function() {
 
 });
 require("/client/Notifier.js");
+
+require.define("/client/TweetStream.js", function (require, module, exports, __dirname, __filename) {
+    var stream = require('stream');
+var _ = require('underscore');
+var util = require('util');
+
+_.extend(Tweetifies, {
+  TweetStream: function() {
+
+    var TweetStream = function() {
+      stream.Stream.call(this);
+      this.readable = true;
+      this.writable = true;
+    };
+
+    TweetStream.prototype.on = function(data) {
+      this.emit('data', data);
+    };
+
+    TweetStream.prototype.end = function() {
+      this.emit('end');
+    };
+
+    util.inherits(TweetStream, stream.Stream);
+
+    return new TweetStream();
+  }
+});
+
+
+});
+require("/client/TweetStream.js");

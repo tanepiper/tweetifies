@@ -10,6 +10,7 @@ _.extend(Tweetifies, {
       render: function() {
         if (this.data.in_reply_to_screen_name === Tweetifies.app.profile.screen_name) {
           this.el.css({backgroundColor: '#D1F5D1'});
+          Tweetifies.Notifier.Notify(this.data.user.profile_image_url, 'Tweet From @' + this.data.user.screen_name, this.data.text);
         }
 
         $('#twitter-output').prepend(this.el);
