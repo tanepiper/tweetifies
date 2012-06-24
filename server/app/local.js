@@ -50,6 +50,14 @@ module.exports = function(instance, stream, dnode) {
               twitter.retweetStatus(id, cb);
             },
 
+            createFavorite: function(id, cb) {
+              twitter.createFavorite(id, cb);
+            },
+
+            destroyFavorite: function(id, cb) {
+              twitter.destroyFavorite(id, cb);
+            },
+
             search: function(query, cb) {
 
               var qs = _.extend({}, {

@@ -13,7 +13,11 @@
               <li class="nav-header">Tweet</li>
               <li><a class="reply" href="#"><i class="icon-hand-left"></i> Reply</a></li>
               <li><a class="retweet" href="#"><i class="icon-refresh"></i> Retweet</a></li>
-              <li><a class="favourite" href="#"><i class="icon-heart"></i> Favourite</a></li>
+              <% if (tweet.favorited) { %>
+                <li><a class="favorite unfavorite" href="#"><i class="icon-star-empty"></i> Unfavorite</a></li>
+              <% } else { %>
+                <li><a class="favorite" href="#"><i class="icon-star"></i> Favorite</a></li>
+              <% } %>
               <!--<li><a class="delete disabled" disabled="disabled" href="#"><i class="icon-trash"></i> Delete</a></li>
               <li class="divider"></li>
               <li class="nav-header">User</li>

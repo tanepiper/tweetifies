@@ -19,16 +19,22 @@ _.extend(Tweetifies, {
           el.prepend(this.el);
         }
 
+        if (this.data.favorited) {
+          $(this.el).css({ 'background-color': '#E9EE65' });
+        }
+
         this.el.slideDown();
 
         $('.reply', this.el).on('click', this.onReply.bind(this));
         $('.retweet', this.el).on('click', this.onRetweet.bind(this));
+        $('.favorite', this.el).on('click', this.onFavorite.bind(this));
         // This loads the current user
         $('.screen-name', this.el).on('click', this.onScreenname.bind(this));
 
         // This loads another users profile, we don't need to bind this tweet
         $('.user-profile', this.el).on('click', this.onUserProfile);
         $('.hash-tag', this.el).on('click', this.onHashTag);
+
       },
       onReply: function(e) {
         e.preventDefault();
@@ -68,6 +74,32 @@ _.extend(Tweetifies, {
               });
               $('.meta p', '#tweet-' + origional_tweet).html($('.meta p', '#tweet-' + origional_tweet).html() + ' Retweeted ' + tweet.retweet_count + ' times');
             }*/
+          });
+        }
+      },
+
+      onFavorite: function(e) {
+        e.preventDefault();
+
+        var id = this.id;
+        var trigger = $(e.target).hasClass('unfavorite');
+        console.log(trigger);
+
+        if (trigger) {
+          Tweetifies.app.destroyFavorite(id, function(err, tweet) {
+            if (err) {
+              return Tweetifies.onError(err);
+            }
+            $('#tweet-' + id).css({ 'background-color': 'whiteSmoke' });
+            $(e.target).html('<i class="icon-star"></i> Favorite</a>').removeClass('unfavorite');
+          });
+        } else {
+          Tweetifies.app.createFavorite(id, function(err, tweet) {
+            if (err) {
+              return Tweetifies.onError(err);
+            }
+            $('#tweet-' + id).css({ 'background-color': '#E9EE65' });
+            $(e.target).html('<i class="icon-star-empty"></i> Unfavorite</a>').addClass('unfavorite');
           });
         }
       },
