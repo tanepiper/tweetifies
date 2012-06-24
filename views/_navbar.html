@@ -8,7 +8,7 @@
         <% if (session.oauth) { %>
           <li><a href="/home">Tweets</a></li>
           <li><a id="view-mentions" href="/mentions">Mentions</a></li>
-          <li><a href="/direct-messages">Direct Messages</a></li>
+          <li><a>Direct Messages</a></li>
         <% } else { %>
           <li>
             <a href="/login/twitter"><i class="icon-fire icon-white"></i>&nbsp;Login Via Twitter</a>
@@ -17,6 +17,9 @@
       </ul>
 
       <% if (session.oauth) { %>
+        <form id="twitter-search" class="navbar-search pull-left" action="/search">
+          <input type="text" class="search-query span2" placeholder="Search">
+        </form>
         <ul class="nav pull-right">
           <li><a id="desktop-notifications" class="off" href="#"><i class="icon-remove-sign icon-white"></i> Desktop Notifications</a></li>
           <li><a href="/logout">Logout</a></li>
@@ -26,8 +29,6 @@
   </div>
   <% if (session.oauth) { %>
     <div class="hero-unit">
-      <h2 class="pull-left">Your Twitter Feed</h2>
-      <p class="pull-right">Left: <span class="chars-left">140</span> characters</p>
       <form id="twitter-input">
         <fieldset>
           <div class="control-group">
@@ -47,15 +48,18 @@
                     </li>
                     <li><a class="upload" >Upload Image</a></li>
                   </ul>
+
                   <ul class="nav pull-right">
                     <li><a id="send-tweet" href="#">Tweet</a></li>
                   </ul>
+                  <p class="pull-right">Left: <span class="chars-left">140</span> characters</p>
                 </div>
               </div>
             </div>
           </div>
         </fieldset>
       </form>
+      <div class="hide-toggle down"><a href="#" class="btn"><i class="icon-circle-arrow-up"></i> Hide</a></div>
     </div>
   <% } %>
 </div>

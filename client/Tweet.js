@@ -61,6 +61,8 @@ _.extend(Tweetifies, {
       },
 
       onRetweet: function(e) {
+        e.preventDefault();
+
         var c = confirm('Retweet to your followers?');
         if (c) {
           Tweetifies.app.retweetStatus(this.id, function(err, tweet) {

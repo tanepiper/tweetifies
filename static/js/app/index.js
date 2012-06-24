@@ -6106,6 +6106,46 @@ window.Tweetifies = _.extend({}, {
     });
   },
 
+  onSearch: function(e) {
+    e.preventDefault();
+
+    var search_value = $('.search-query', this).val();
+
+    $('#search-modal .modal-header').html('<h3>Search: ' + search_value + '</h3>');
+    $('#search-modal .modal-body').html('Loading Tweets');
+    $('#search-modal').modal('show');
+
+    Tweetifies.app.search(search_value, function(err, tweets) {
+      if (err) {
+        return Tweetifies.onError(err);
+      }
+
+      $('#search-modal .modal-body').html('');
+      tweets.reverse().forEach(function(tweet) {
+        var item = new Tweetifies.Tweet(tweet);
+        item.render($('#search-modal .modal-body'));
+      });
+    });
+  },
+
+  onHideToggle: function(e) {
+    e.preventDefault();
+
+    if ($(this).hasClass('down')) {
+      $('#twitter-input').slideUp();
+      $('body').animate({
+        paddingTop: '120px'
+      });
+      $(this).removeClass('down').addClass('up').html('<i class="icon-circle-arrow-down"></i> Show');
+    } else {
+      $('#twitter-input').slideDown();
+      $('body').animate({
+        paddingTop: '240px'
+      });
+      $(this).removeClass('up').addClass('down').html('<i class="icon-circle-arrow-up"></i> Hide');
+    }
+  },
+
   init: function() {
 
     $('#loading-modal').modal('show');
@@ -6133,7 +6173,11 @@ window.Tweetifies = _.extend({}, {
           $('.geocode').on('click', Tweetifies.onGeocode);
           $('#send-tweet').on('click', Tweetifies.onSendTweet);
 
+          $('.hide-toggle a').on('click', Tweetifies.onHideToggle);
+
           $('#view-mentions').on('click', Tweetifies.onViewMentions);
+
+          $('#twitter-search').on('submit', Tweetifies.onSearch);
 
 
           //setInterval(Tweetifies.onTimeUpdate, 10000);
@@ -6210,6 +6254,8 @@ _.extend(Tweetifies, {
       },
 
       onRetweet: function(e) {
+        e.preventDefault();
+
         var c = confirm('Retweet to your followers?');
         if (c) {
           Tweetifies.app.retweetStatus(this.id, function(err, tweet) {
