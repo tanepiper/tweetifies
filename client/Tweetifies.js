@@ -17,7 +17,15 @@ window.Tweetifies = _.extend({}, {
   MAX_ITEMS_TO_LOAD: 300,
 
   onError: function(error) {
-    console.log('Error', error);
+    var err;
+    try {
+      err = JSON.stringify(error);
+    } catch (exp) {
+      err = error.toString();
+    }
+
+    $('#error-modal .modal-body').html('<pre>' + err + '</pre>');
+    $('#error-modal').modal('show');
   },
 
   onTweet: function(tweet, render_now) {
@@ -121,8 +129,8 @@ window.Tweetifies = _.extend({}, {
     Tweetifies.current_position = position.coords;
   },
 
-  onPositionError: function(error) {
-    console.log(error);
+  onPositionError: function(err) {
+    Tweetifies.onError(err);
   },
 
   onSendTweet: function(e) {

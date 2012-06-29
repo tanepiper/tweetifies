@@ -171,6 +171,10 @@ module.exports = function(instance, stream, dnode) {
 
             showUser: function(id, cb) {
               twitter.showUser(id, cb);
+
+              this.foo = function() {
+
+              }
             }
           };
 

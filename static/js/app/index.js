@@ -5948,7 +5948,15 @@ window.Tweetifies = _.extend({}, {
   MAX_ITEMS_TO_LOAD: 300,
 
   onError: function(error) {
-    console.log('Error', error);
+    var err;
+    try {
+      err = JSON.stringify(error);
+    } catch (exp) {
+      err = error.toString();
+    }
+
+    $('#error-modal .modal-body').html('<pre>' + err + '</pre>');
+    $('#error-modal').modal('show');
   },
 
   onTweet: function(tweet, render_now) {
@@ -6052,8 +6060,8 @@ window.Tweetifies = _.extend({}, {
     Tweetifies.current_position = position.coords;
   },
 
-  onPositionError: function(error) {
-    console.log(error);
+  onPositionError: function(err) {
+    Tweetifies.onError(err);
   },
 
   onSendTweet: function(e) {
@@ -6237,6 +6245,10 @@ _.extend(Tweetifies, {
           $('input#in-reply-to').remove();
         }
 
+        if ($('.hide-toggle a').hasClass('up')) {
+          $('.hide-toggle a').trigger('click');
+        }
+
         // Get the names of all the people involved
         if (this.data.entities.user_mentions && this.data.entities.user_mentions.length > 0) {
           this.data.entities.user_mentions.forEach(function(mention) {
@@ -6262,13 +6274,6 @@ _.extend(Tweetifies, {
             if (err) {
               return Tweetifies.onError(err);
             }
-            /*else {
-              var origional_tweet = this.data.retweeted_status.id;
-              $('#tweet-' + origional_tweet).css({
-                'background-color': '#E4FAD2'
-              });
-              $('.meta p', '#tweet-' + origional_tweet).html($('.meta p', '#tweet-' + origional_tweet).html() + ' Retweeted ' + tweet.retweet_count + ' times');
-            }*/
           });
         }
       },
