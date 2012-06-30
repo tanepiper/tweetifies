@@ -2,7 +2,9 @@ var server = require('./../server/');
 var assert = require('assert');
 var request = require('request');
 
-var instance = server.createInstance();
+var instance = server.createInstance({
+  base: __dirname + '/../'
+});
 
 describe('Tweetifies HTTP Server - Express', function(){
   it('Instance should have options present', function(){
