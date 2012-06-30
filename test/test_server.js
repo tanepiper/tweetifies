@@ -1,13 +1,12 @@
-var config = require('./../config');
 var server = require('./../server/');
 var assert = require('assert');
 var request = require('request');
 
-var instance = server.createInstance(config);
+var instance = server.createInstance();
 
 describe('Tweetifies HTTP Server - Express', function(){
   it('Instance should have options present', function(){
-    assert.deepEqual(instance.options, config, 'Instance options did not inherit from config');
+    assert(instance.options, 'Instance options not generated');
   });
 
   it('Instance should have express server', function() {
@@ -21,7 +20,7 @@ describe('Tweetifies HTTP Server - Express', function(){
 
   it('Instance should present a login page', function(done) {
     request({
-      uri: 'http://' + config.express.host + ':' + config.express.port + '/'
+      uri: 'http://' + instance.options.express.host + ':' + instance.options.express.port + '/'
     }, function(err, response, body) {
       assert.ifError(err);
       assert.equal(response.statusCode, 200, 'Express returned non-200 state');
@@ -31,7 +30,7 @@ describe('Tweetifies HTTP Server - Express', function(){
 
   it('Instance should return a redirect when trying to access app not logged in', function(done) {
     request({
-      uri: 'http://' + config.express.host + ':' + config.express.port + '/home',
+      uri: 'http://' + instance.options.express.host + ':' + instance.options.express.port + '/home',
       followRedirect: false
     }, function(err, response, body) {
       assert.ifError(err);
