@@ -14,7 +14,7 @@ module.exports = function(instance) {
    */
   return function(req, res, next) {
     if (!req.session.oauth) {
-      return res.redirect('/');
+      return res.redirect('/', 302);
     }
 
     res.render('app', { session: req.session });
