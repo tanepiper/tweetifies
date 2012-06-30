@@ -20,7 +20,8 @@
   },
 
   "devDependencies": {
-    "mocha": "1.2.2"
+    "mocha": "1.2.2",
+    "weak": "*"
   },
 
   "scripts": {
