@@ -28,6 +28,10 @@ function dnode (cons, opts) {
         if (self._ended) return;
         self.proto = self._createProto();
         self.proto.start();
+        
+        (self._handleQueue || []).forEach(function (row) {
+            self.handle(row);
+        });
     });
 }
 
@@ -98,7 +102,7 @@ dnode.prototype.write = function (buf) {
                 
                 j = i + 1;
                 
-                self.proto.handle(row);
+                self.handle(row);
                 self._bufs = [];
             }
         }
@@ -108,7 +112,7 @@ dnode.prototype.write = function (buf) {
     else if (buf && typeof buf === 'object') {
         // .isBuffer() without the Buffer
         // Use self to pipe JSONStream.parse() streams.
-        self.proto.handle(buf);
+        self.handle(buf);
     }
     else {
         if (typeof buf !== 'string') buf = String(buf);
@@ -119,12 +123,20 @@ dnode.prototype.write = function (buf) {
                 try { row = json.parse(self._line) }
                 catch (err) { return self.end() }
                 
-                self.proto.handle(row);
+                self.handle(row);
                 self._line = '';
             }
             else self._line += buf.charAt(i)
         }
     }
+};
+
+dnode.prototype.handle = function (row) {
+    if (!this.proto) {
+        if (!this._handleQueue) this._handleQueue = [];
+        this._handleQueue.push(row);
+    }
+    else this.proto.handle(row);
 };
 
 dnode.prototype.end = function () {

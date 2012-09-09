@@ -105,36 +105,28 @@ $ node client.js
 beep => BOOP
 ```
 
-using sockjs in the browser
-----------------------------
+dnode in the browser
+--------------------
 
 Since dnode instances are just readable/writable streams, you can use them with
 any streaming transport, including in the browser!
 
 This example uses the streaming interface provided by
-[sockjs](http://sockjs.org/).
-
-NOTE: This sockjs interface is presently pending:
-[sockjs-client/pull/76](https://github.com/sockjs/sockjs-client/pull/76)
-[sockjs-node/pull/77](https://github.com/sockjs/sockjs-node/pull/77)
-
-For now, put
-[these entries](https://github.com/substack/dnode/blob/master/example/sockjs/package.json#L5-L6)
-into your package.json.
+[shoe](https://github.com/substack/shoe), which is just a thin wrapper on top of
+[sockjs](http://sockjs.org/) that provides websockets with fallbacks.
 
 First whip up a server:
 
 ``` js
 var http = require('http');
-var sockjs = require('sockjs');
+var shoe = require('shoe');
 var ecstatic = require('ecstatic')(__dirname + '/static');
 var dnode = require('dnode');
 
 var server = http.createServer(ecstatic);
 server.listen(9999);
 
-var sock = sockjs.createServer();
-sock.on('connection', function (stream) {
+var sock = shoe(function (stream) {
     var d = dnode({
         transform : function (s, cb) {
             var res = s.replace(/[aeiou]{2,}/, 'oo').toUpperCase();
@@ -143,19 +135,19 @@ sock.on('connection', function (stream) {
     });
     d.pipe(stream).pipe(d);
 });
-sock.installHandlers(server, { prefix : '/dnode' });
+sock.install(server, '/dnode');
 ```
 
 Then write some browser code:
 
 ``` js
 var domready = require('domready');
-var sockjs = require('sockjs');
+var shoe = require('shoe');
 var dnode = require('dnode');
 
 domready(function () {
     var result = document.getElementById('result');
-    var stream = sockjs('/dnode');
+    var stream = shoe('/dnode');
     
     var d = dnode();
     d.on('remote', function (remote) {
@@ -167,24 +159,27 @@ domready(function () {
 });
 ```
 
-Compile the browser code with
+Install the dependencies for this example then compile the browser code with
 [browserify](https://github.com/substack/node-browserify):
 
 ```
+$ npm install dnode shoe domready ecstatic
+$ npm install -g browserify
 $ browserify client.js -o static/bundle.js
 ```
 
-Then drop the bundle into some html with a "result" id:
+Now drop a script tag into static/index.html:
 
 ``` html
 <script src="/bundle.js"></script>
 <div id="result"></div>
 ```
 
-and you should see `beep => BOOP` on the page!
+and navigate to http://localhost:9999.
+You should see `beep => BOOP` on the page!
 
 Check out the
-[complete sockjs example](https://github.com/substack/dnode/tree/master/example/sockjs).
+[complete shoe example](https://github.com/substack/dnode/tree/master/example/shoe).
 
 methods
 =======

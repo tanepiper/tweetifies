@@ -4,9 +4,9 @@
 var _ = require('underscore');
 var fs = require('fs');
 var ejs = require('ejs');
-var xregexp = require('xregexp');
 var moment = require('moment');
 var eventStream = require('event-stream');
+var twittertext = require('twitter-text');
 
 /**
  * The incoming tweet module uses event-stream to map a async function as a stream - allowing events to be .write
@@ -42,6 +42,9 @@ module.exports = function(instance) {
       });
     }
 
+    output_object.tweet.text = twittertext.autoLink(output_object.tweet.text);
+
+    /*
     // Mentions and hash tags we can just replace
     output_object.tweet.text = output_object.tweet.text.replace(/\B@([\w-]+)/gmi, '<a class="user-profile" rel="$1" target="_blank" title="@$1" href="http://twitter.com/$1">@$1</a>');
     output_object.tweet.text = output_object.tweet.text.replace(/\B#([\w-]+)/gmi, '<a class="hash-tag" target="_blank" title="#$1" href="http://twitter.com/search/' + encodeURIComponent('#') + '$1">#$1</a>');
@@ -63,6 +66,7 @@ module.exports = function(instance) {
         output_object.tweet.text = output_object.tweet.text.replace(media.url, '<a target="_new" href="' + link + '" title="' + link + '">' + display + '</a>', 'gi');
       });
     }
+     */
 
     // Generate our output HTML
     var tpl = ejs.render(instance.templates.tweet, output_object);

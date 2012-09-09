@@ -32,7 +32,7 @@ module.exports = function(instance, dnode) {
       });
 
       process_tweet.on('error', function(error) {
-        dnode.proto.remote.onError(err);
+        dnode.proto.remote.onError(error);
       });
 
       process_tweet.write(data);
