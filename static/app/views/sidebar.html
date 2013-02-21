@@ -1,0 +1,11 @@
+<div class="span3" ng-controller="SidebarCtrl">
+  <div class="well">
+    <side-profile></side-profile>
+    <ul class="nav nav-list">
+      <li class="nav-header">Views</li>
+      <li><a href="#/">Timeline</a><span class="badge">{{current_outstanding_tweets || 0}}</span></li>
+      <li><a href="#/direct-messages">Direct Messages</a></li>
+      <li><a href="#/search">Search</a></li>
+    </ul>
+  </div>
+</div>

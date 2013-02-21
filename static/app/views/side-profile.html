@@ -1,0 +1,24 @@
+<div class="side-profile">
+  <div class="row-fluid">
+    <img ng-src="{{profile.profile_image_url}}" style="width: 48px; height: 48px; border-radius: 4px;" />
+    <span>@{{profile.screen_name}}</span>
+    <a href="#/full-profile">View full profile</a>
+  </div>
+
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th width="34%">Tweets</th>
+        <th width="33%">Following</th>
+        <th width="33%">Followers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{profile.statuses_count}}</td>
+        <td>{{profile.friends_count}}</td>
+        <td>{{profile.followers_count}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

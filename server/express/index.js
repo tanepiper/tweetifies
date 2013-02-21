@@ -10,51 +10,42 @@ var engines = require('consolidate');
  */
 module.exports = function(instance) {
 
+  // We need to tell swig where the root of the views dir is
   swig.init({
     root: instance.options.express.views_dir
   });
 
-  // First we create our HTTP instance and session store
-  var app = express();
-  var server = require('http').createServer(app);
+  // First we create our express and HTTP instance
+  instance.app = express();
+  instance.server = require('http').createServer(instance.app);
 
   var RedisStore = require('connect-redis')(express);
-  var store = new RedisStore();
+  instance.sessions = new RedisStore();
 
   var cookieParser = express.cookieParser('tweetifies');
+  instance.cookieParser = cookieParser;
 
   // Now we configure the express app
-  app.engine('html', engines.swig);
-  app.set('views', instance.options.express.views_dir);
-  app.set('view engine', 'html');
+  instance.app.engine('html', engines.swig);
+  instance.app.set('views', instance.options.express.views_dir);
+  instance.app.set('view engine', 'html');
 
 
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(cookieParser);
-  app.use(express.session({secret: 'tweetifies', store: store})); // Make this a hash
+  instance.app.use(express.bodyParser());
+  instance.app.use(express.methodOverride());
+  instance.app.use(cookieParser);
+  instance.app.use(express.session({secret: 'tweetifies', store: instance.sessions})); // Make this a hash
 
-  app.use(express.static(instance.options.express.static_dir));
+  instance.app.use(express.static(instance.options.express.static_dir));
 
-  app.post('/auth', function(req, res, next) {
-    if (!req.session) return;
+  instance.app.get('/login/twitter/return', require('./paths/get_login_twitter_return')(instance));
+  instance.app.get('/login/twitter', require('./paths/get_login_twitter')(instance));
+  instance.app.get('/logout', require('./paths/get_logout')(instance));
+  instance.app.get('/home', require('./paths/get_home')(instance));
+  instance.app.get('/', require('./paths/get_index')(instance));
 
-    var token = Math.random().toString(16).slice(2);
-    instance.tokens[token] = req.session;
+  instance.server.listen(instance.options.express.port, instance.options.express.host);
 
-    res.end(token);
-  });
 
-  app.get('/login/twitter/return', require('./paths/get_login_twitter_return')(instance));
-  app.get('/login/twitter', require('./paths/get_login_twitter')(instance));
-  app.get('/logout', require('./paths/get_logout')(instance));
-  app.get('/home', require('./paths/get_home')(instance));
-  app.get('/', require('./paths/get_index')(instance));
 
-  server.listen(instance.options.express.port, instance.options.express.host);
-
-  instance.sessions = store;
-  instance.express = app;
-  instance.server = server;
-  instance.cookieParser = cookieParser;
 }

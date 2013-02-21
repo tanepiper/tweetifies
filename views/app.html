@@ -12,16 +12,8 @@
   </div>
 
   <div class="row" style="margin-top: 60px;">
-    <div class="span3">
-      <div class="well">
-        <ul class="nav nav-list">
-          <li class="nav-header">Views</li>
-          <li><a href="#/">Timeline</a></li>
-          <li><a href="#/direct-messages">Direct Messages</a></li>
-          <li><a href="#/search">Search</a></li>
-        </ul>
-      </div>
-    </div>
+
+    <div ng-include="'/app/views/sidebar.html'"></div>
 
     <div class="span9 container" ng-view></div>
   </div>
@@ -36,8 +28,15 @@
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
 
 <script src="/app/tweetifies.js"></script>
+
 <script src="/app/controllers/timeline.js"></script>
+<script src="/app/controllers/profile.js"></script>
+<script src="/app/controllers/tweet.js"></script>
+<script src="/app/controllers/sidebar.js"></script>
 
 <script src="/app/services/socket.js"></script>
 <script src="/app/services/timeline.js"></script>
+
+<script src="/app/directives/side-profile.js"></script>
+<script src="/app/directives/tweet.js"></script>
 {% endblock %}
