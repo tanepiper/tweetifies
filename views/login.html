@@ -1,12 +1,12 @@
-<div class="row">
-  <div class="hero-unit">
-    <h1>Tweetifies</h1>
-    <a href="/login/twitter"><i class="icon-fire"></i>&nbsp;Login Via Twitter</a>
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="hero-unit">
+      <h1>Tweetifies</h1>
+      <a href="/login/twitter"><i class="icon-fire"></i>&nbsp;Login Via Twitter</a>
+    </div>
   </div>
 </div>
-
-<script type="text/javascript">
-  $(function() {
-    Tweetifies.init();
-  });
-</script>
+{% endblock %}

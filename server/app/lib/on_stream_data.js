@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-module.exports = function(instance, dnode) {
+module.exports = function(instance, socket) {
 
   return function(data) {
     console.log('============== data event ==============');
@@ -24,7 +24,11 @@ module.exports = function(instance, dnode) {
     } else if (data.event) {
 
     } else {
+
+      socket.emit('tweet', data);
+
       // Finally we have a fucking tweet!
+      /*
       var process_tweet = require('./../processors/tweet')(instance);
 
       process_tweet.on('data', function(data) {
@@ -36,6 +40,7 @@ module.exports = function(instance, dnode) {
       });
 
       process_tweet.write(data);
+      */
     }
   };
 };

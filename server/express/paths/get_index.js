@@ -15,7 +15,10 @@ module.exports = function(instance) {
     if (req.session.oauth) {
       return res.redirect('/home');
     }
-    res.render('login', { session: req.session });
+
+    res.render('login', {
+      session: req.session
+    });
   };
 
 };

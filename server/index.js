@@ -26,13 +26,9 @@ module.exports = (function() {
           host: '0.0.0.0',
           port: 8001,
           static_dir: __dirname + '/static',
-          view_dir: __dirname
+          view_dir: __dirname + '/views'
         }
       });
-
-      instance.templates = {
-        tweet: fs.readFileSync(instance.options.base + '/server/app/templates/tweet.html', 'utf8')
-      };
 
       instance.users = {};
 
@@ -41,7 +37,7 @@ module.exports = (function() {
      // Attach the express server for HTTP
       require('./express')(instance);
 
-      require('./app')(instance);
+      require('./app2')(instance);
 
       return instance;
     }

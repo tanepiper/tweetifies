@@ -1,30 +1,9 @@
 <html>
 <head>
   <title>Tweetifies</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
-  <link rel="stylesheet" type="text/css" href="/css/bootstrap-responsive.css" />
-
-  <link rel="stylesheet" type="text/css" href="/css/app.css" />
-
-  <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
-  <script type="text/javascript" src="/js/libs/underscore.js"></script>
-
-  <script type="text/javascript" src="/js/libs/bootstrap.js"></script>
-  <script type="text/javascript" src="/js/libs/bootstrap.modal.js"></script>
-  <script type="text/javascript" src="/js/libs/bootstrap-button.js"></script>
-  <script type="text/javascript" src="/js/libs/bootstrap.tooltip.js"></script>
-  <script type="text/javascript" src="/js/libs/bootstrap.popover.js"></script>
-  <script type="text/javascript" src="/js/libs/moment.js"></script>
-  <script type="text/javascript" src="/js/libs/page.js"></script>
-  <script type="text/javascript" src="/js/libs/modestmaps.min.js"></script>
-
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet" />
 </head>
 <body>
-  <div class="container">
-    <%- partial('navbar', session) %>
-
-    <%- body %>
-  </div>
+  {% block content %}{% endblock %}
 </body>
 </html>

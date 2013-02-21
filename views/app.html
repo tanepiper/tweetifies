@@ -1,85 +1,43 @@
-<div class="row">
-  <div id="alerts" class="alert alert-error" style="display:none;"></div>
-  <div id="queue" class="alert alert-info" style="display:none;">
-    <strong><a href="#" id="load-tweets"></a></strong>
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container" ng-app="Tweetifies">
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand">Tweetifies</a>
+      </div>
+    </div>
   </div>
 
-  <div id="twitter-output" class="span6"></div>
-  <div id="twitter-sidebar" class="span6"></div>
+  <div class="row" style="margin-top: 60px;">
+    <div class="span3">
+      <div class="well">
+        <ul class="nav nav-list">
+          <li class="nav-header">Views</li>
+          <li><a href="#/">Timeline</a></li>
+          <li><a href="#/direct-messages">Direct Messages</a></li>
+          <li><a href="#/search">Search</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="span9 container" ng-view></div>
+  </div>
+
+
+
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
 
+<script src="/app/tweetifies.js"></script>
+<script src="/app/controllers/timeline.js"></script>
 
-<script src="/js/app/index.js"></script>
-
-<!--
-<script type="text/javascript" src="/dnode.js"></script>
-<script src="/js/app/Tweetifies.js"></script>
-<script src="/js/app/Tweet.js"></script>
--->
-
-<script type="text/javascript">
-  $(function() {
-    Tweetifies.init();
-  });
-</script>
-
-
-<div class="modal fade" id="loading-modal" style="display: none;">
-  <div class="modal-header">
-    <h3>Tweetifies Loading</h3>
-  </div>
-  <div class="modal-body">
-    <p>Currently loading initial tweets and initialising application</p>
-  </div>
-  <div class="modal-footer"></div>
-</div>
-
-<div class="modal fade" id="mentions-modal" style="display: none;">
-  <div class="modal-header">
-    <h3>Mentions</h3>
-  </div>
-  <div class="modal-body">
-    <p>Loading Mentions</p>
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-    <a href="#" class="btn btn-primary" id="load-more">Load More</a>
-  </div>
-</div>
-
-<div class="modal fade" id="user-modal" style="display: none;">
-  <div class="modal-header">
-    <h3>User</h3>
-  </div>
-  <div class="modal-body">
-    <p>Loading Timeline</p>
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-    <a href="#" class="btn btn-primary" id="load-more">Load More</a>
-  </div>
-</div>
-
-<div class="modal fade" id="search-modal" style="display: none;">
-  <div class="modal-header">
-    <h3>Search</h3>
-  </div>
-  <div class="modal-body">
-    <p>Loading Searches</p>
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-    <a href="#" class="btn btn-primary" id="load-more">Load More</a>
-  </div>
-</div>
-
-<div class="modal fade" id="error-modal" style="display: none;">
-  <div class="modal-header">
-    <h3>Error</h3>
-  </div>
-  <div class="modal-body"></div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-  </div>
-</div>
+<script src="/app/services/socket.js"></script>
+<script src="/app/services/timeline.js"></script>
+{% endblock %}

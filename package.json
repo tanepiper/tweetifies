@@ -1,30 +1,31 @@
 {
   "name": "Tweetifies",
   "version": "0.6.0",
-
   "dependencies": {
-    "async": ">=0.1.22",
-    "connect-redis": ">=1.4.0",
-    "dnode": ">=1.0.1",
-    "ejs": ">=0.7.2",
-    "event-stream": ">=2.0.4",
-    "express": "2.5.10",
-    "moment": ">=1.6.2",
-    "ntwitter": ">=0.3.1",
-    "page": ">=1.1.3",
-    "qs": ">=0.5.0",
+    "async": "~0.2.5",
+    "connect-redis": "~1.4.5",
+    "dnode": "~1.0.2",
+    "ejs": "~0.8.3",
+    "event-stream": "~3.0.11",
+    "express": "~3.1.0",
+    "moment": "~2.0.0",
+    "ntwitter": "~0.5.0",
+    "page": "~1.3.5",
+    "qs": "~0.5.3",
     "redis-client": ">=0.3.5",
     "shoe": ">=0.0.0",
-    "underscore": ">=1.3.3",
+    "underscore": "~1.4.4",
     "xregexp": ">=2.0.0",
-    "twitter-text": ">=1.5.0"
+    "twitter-text": "~1.5.2",
+    "socket.io": "~0.9.13",
+    "consolidate": "~0.8.0",
+    "swig": "~0.13.5",
+    "session.socket.io": "~0.1.6"
   },
-
   "devDependencies": {
     "mocha": "1.2.2",
     "weak": "*"
   },
-
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha"
   }
