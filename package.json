@@ -21,7 +21,8 @@
     "consolidate": "~0.8.0",
     "swig": "~0.13.5",
     "session.socket.io": "~0.1.6",
-    "felix-couchdb": "~1.0.6"
+    "felix-couchdb": "~1.0.6",
+    "request": "~2.14.0"
   },
   "devDependencies": {
     "mocha": "1.2.2",

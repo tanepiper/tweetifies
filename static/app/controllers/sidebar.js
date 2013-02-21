@@ -6,6 +6,7 @@ angular.module('Tweetifies')
     $scope.current_new_tweets = 0;
 
     $scope.$on('newTweets', function(e, total) {
+      console.log(e, total);
       $scope.current_new_tweets = total;
     });
 
