@@ -37,6 +37,7 @@ module.exports = (function() {
      // Attach the express server for HTTP
       require('./express')(instance);
 
+      require('./app2/couchdb')(instance);
       require('./app2')(instance);
 
       return instance;

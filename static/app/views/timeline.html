@@ -1,8 +1,25 @@
 <div class="well">
-  <div class="row">
-    <span>New Tweets: {{new_tweets.length}}</span>
-    <button class="btn" ng-click="loadNewTweets()">Show Tweets</button>
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="container">
+        <ul class="nav">
+          <li><a ng-click="loadNewTweets()">New Tweets: {{new_tweets.length}}</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
+
+  <div class="row">
+    <div class="span8">
+      <h2>New Tweet</h2>
+      <form id="new-tweet">
+        <textarea style="width: 100%; min-height: 50px" ng-model="tweet_text" maxlength="140"></textarea>
+        <button class="btn" ng-click="submitTweet()">Tweet!</button>
+        <span class="pull-right">Characters Left: {{characters_left}}</span>
+      </form>
+    </div>
+  </div>
+
 
   <tweet tweet="tweet" ng-repeat="tweet in tweets"></tweet>
 </div>

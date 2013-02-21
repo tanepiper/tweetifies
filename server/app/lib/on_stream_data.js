@@ -12,6 +12,8 @@ module.exports = function(instance, socket) {
     } else if (data.direct_message) {
 
     } else if (data['delete']) {
+      console.log('We got a delete request!')
+      socket.emit('delete', data);
 
     } else if (data.geo_scrub) {
 
@@ -22,6 +24,8 @@ module.exports = function(instance, socket) {
     } else if (data.user_withheld) {
 
     } else if (data.event) {
+
+    } else if (data.disconnect) {
 
     } else {
 

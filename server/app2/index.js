@@ -5,10 +5,14 @@ var ntwitter = require('ntwitter');
 module.exports = function(instance) {
 
   instance.io = socketio.listen(instance.server);
+  instance.io.set('log level', 1);
 
   instance.sessionSockets = new SessionSockets(instance.io, instance.sessions, instance.cookieParser);
 
   instance.sessionSockets.on('connection', function(err, socket, session) {
+
+    session.since_id = null;
+
     var twitter = new ntwitter(session.oauth);
 
     twitter.verifyCredentials(function(err, profile) {
@@ -18,12 +22,40 @@ module.exports = function(instance) {
 
       socket.emit('gotProfile', profile);
 
-      twitter.getHomeTimeline({count: 40, include_entities: true}, function(err, tweets) {
+      var start_options = {count: 40, include_entities: true, contributor_details: true};
+      if (session.since_id) {
+        start_options.since_id = session.since_id;
+      }
+
+      twitter.getHomeTimeline(start_options, function(err, tweets) {
         if (err) {
           return socket.emit('error', err);
         }
 
+        session.since_id = tweets[0].id_str;
+
         socket.emit('homeTimeline', tweets);
+
+        socket.on('newTweet', function(options) {
+          twitter.updateStatus(options.status, options, function(error, tweet) {
+            if (error) {
+              return socket.emit('error', error);
+            }
+            return socket.emit('newTweetSent', tweet);
+          })
+        });
+
+        socket.on('favorite', function(id) {
+          console.log(id)
+          twitter.createFavorite(id, function(error, tweet) {
+            console.log(error, tweet);
+            if (error) {
+              return socket.emit('error', error);
+            }
+            return socket.emit('favorite', tweet);
+          })
+        })
+
 
         /*
         var process_tweet = require('./../app/processors/tweet')(instance);
@@ -176,15 +208,32 @@ module.exports = function(instance) {
           }
         };*/
 
-        twitter.stream('user', function(tstream) {
-          instance.tstream = tstream;
+        var createStream = function() {
+          twitter.stream('user', function(tstream) {
+            instance.tstream = tstream;
 
-          tstream.on('data', require('./../app/lib/on_stream_data')(instance, socket));
-          tstream.on('error', require('./../app/lib/on_stream_error')(instance, socket));
-          //tstream.on('destroy', require(instance.options.base + '/apps/twitter/lib/on_stream_destroy')(instance, d));
+            tstream.on('data', require('./../app/lib/on_stream_data')(instance, socket));
 
-          //cb(null, app);
-        });
+            tstream.on('error', function(error) {
+              socket.emit('error', error);
+              //createStream();
+            });
+            tstream.on('end', function(response) {
+              //socket.emit('error', response);
+              //createStream();
+            });
+            tstream.on('destroy', function(response) {
+              //socket.emit('error', response);
+              //createStream();
+            });
+
+            //tstream.on('destroy', require(instance.options.base + '/apps/twitter/lib/on_stream_destroy')(instance, d));
+
+            //cb(null, app);
+          });
+        };
+
+        createStream();
       });
     });
   });

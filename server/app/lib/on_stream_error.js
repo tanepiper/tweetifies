@@ -1,9 +1,9 @@
-module.exports = function(instance, dnode) {
+module.exports = function(instance, socket) {
 
   return function(error) {
     console.log('============== error event ==============');
     console.log(error);
     console.log('============ end error event ============');
-    dnode.proto.remote.onError(error);
+    socket.emit('error', error);
   };
 };
